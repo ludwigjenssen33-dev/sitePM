@@ -1,0 +1,2 @@
+import type { Case } from '../data/cases';
+export function validateTree(c:Case){return ['before','after'].every(period=>{const v=(id:string)=>c.metrics.find(m=>m.id===id)![period as 'before'|'after'];if(c.id==='market')return Math.abs(v('visitors')*v('conversion')*v('basket')-v('revenue'))<.01&&Math.abs(v('visitors')*v('conversion')-v('orders'))<.01;if(c.id==='stream')return v('start')+v('new')-v('cancel')===v('end');return v('income')-v('cost')===v('margin')&&v('orders')*v('margin')===v('profit');});}
