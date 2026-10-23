@@ -1,0 +1,10 @@
+import { describe, expect, it } from 'vitest';
+import { normalCurve, parseNumericInput, retentionModel, treeResult, unitEconomics } from './model';
+describe('Лаборатория: валидированные модели', () => {
+  it('считает произведение и аддитивную декомпозицию', () => { const data = [{ id: '1', name: 'A', value: 200000 }, { id: '2', name: 'B', value: .045 }, { id: '3', name: 'C', value: 2000 }]; expect(treeResult(data, 'multiply')).toBe(18000000); expect(treeResult([{id:'1',name:'a',value:300},{id:'2',name:'b',value:255}], 'subtract')).toBe(45); expect(treeResult(data, 'sum')).toBeCloseTo(202000.045); });
+  it('не допускает пустых деревьев и переполнения', () => { expect(() => treeResult([], 'sum')).toThrow(); expect(() => treeResult([{ id: '1', name: 'a', value: Infinity }], 'multiply')).toThrow(); expect(() => treeResult([{ id: '1', name: 'a', value: 1e12 }, { id: '2', name: 'b', value: 1e12 }], 'multiply')).toThrow(); });
+  it('синтетическая когорта монотонно убывает', () => { const series = retentionModel(1000,.8); expect(series[0].users).toBe(1000); expect(series[1].users).toBe(800); expect(series[6].users).toBe(262); expect(() => retentionModel(0, .8)).toThrow(); expect(() => retentionModel(100, 1.1)).toThrow(); expect(() => retentionModel(1e300,.8)).toThrow(); });
+  it('не путает маржу заказа и пользователя', () => { const result = unitEconomics(.19,320,255,20000); expect(result.margin).toBe(65); expect(result.profitPerUser).toBeCloseTo(12.35); expect(result.expectedProfit).toBe(247000); expect(() => unitEconomics(1.1,320,255,10)).toThrow(); expect(() => unitEconomics(.5,1e308,1,1000)).toThrow(); });
+  it('нормальная кривая симметрична, не строится при нулевой ошибке', () => { const curve = normalCurve(0,.01); expect(curve[0].density).toBeCloseTo(curve[80].density); expect(curve[40].x).toBe(0); expect(curve[40].density).toBeGreaterThan(curve[0].density); expect(normalCurve(0,0)).toEqual([]); });
+  it('пустой и некорректный ввод не становится нулём', () => { expect(parseNumericInput('1,5')).toBe(1.5); expect(() => parseNumericInput('')).toThrow(); expect(() => parseNumericInput('Infinity')).toThrow(); });
+});

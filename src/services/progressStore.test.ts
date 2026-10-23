@@ -1,0 +1,20 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { emptyAnswers } from '../lib/scoring';
+import { emptyProgress, newAttempt } from '../domain/progress';
+import { legacyProgressKey, loadProgress, mergeProgress, migrateLegacy, parseProgress, progressKey, saveProgress } from './progressStore';
+let memory: Map<string, string>;
+beforeEach(() => { memory = new Map(); Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem: (key: string) => memory.get(key) ?? null, setItem: (key: string, value: string) => { memory.set(key, value); } } }); });
+const legacy = { market: { step: 3, answers: { ...emptyAnswers, node: 'conversion', hypothesis: 1, primary: 0, guardrail: 0, interpretation: 0, decision: 2 }, confirmed: true, finished: true, score: 100, best: 100, updated: '2026-10-20T00:00:00Z' } };
+describe('Совместимость хранения', () => {
+  it('мигрирует v1, сохраняя исходный ключ и прежнюю рубрику', () => { const raw = JSON.stringify(legacy); memory.set(legacyProgressKey, raw); const state = loadProgress(); expect(state.attempts[0].score).toBe(100); expect(state.attempts[0].criteria?.[4].points).toBe(20); expect(state.attempts[0].migrated).toBe(true); expect(memory.get(legacyProgressKey)).toBe(raw); });
+  it('сохраняет исторический лучший балл, не выдумывая ответы и критерии', () => { const state = migrateLegacy({ market: { ...legacy.market, score: 50, best: 95 } }); expect(state.attempts).toHaveLength(2); expect(state.attempts.find(a => a.summaryOnly)?.score).toBe(95); expect(state.attempts.find(a => a.summaryOnly)?.criteria).toBeUndefined(); });
+  it('загрузка миграции идемпотентна', () => { memory.set(legacyProgressKey, JSON.stringify(legacy)); const first = loadProgress(); saveProgress(first); const second = loadProgress(); expect(second.attempts).toHaveLength(first.attempts.length); expect(second.profile.guestId).toBe(first.profile.guestId); });
+  it('сохраняет неизвестные валидные caseId для будущего контента', () => { const state = { ...emptyProgress(), attempts: [newAttempt('future-mission')] }; expect(parseProgress(state)?.attempts).toHaveLength(1); });
+  it('невалидный JSON не приводит к падению; при сохранении создаётся recovery', () => { memory.set(progressKey, '{broken'); const state = loadProgress(); expect(saveProgress(state)).toBe(true); expect([...memory.keys()].some(key => key.startsWith(progressKey + '-recovery-'))).toBe(true); });
+  it('не допускает частичных или некорректных числовых записей', () => { const state = emptyProgress(); const malformed = { ...newAttempt('market'), score: NaN }; expect(parseProgress({ ...state, attempts: [malformed] })?.attempts).toHaveLength(0); });
+  it('сообщает об отказе хранилища', () => { Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem() { throw new Error('denied'); }, setItem() { throw new Error('denied'); } } }); expect(loadProgress().attempts).toEqual([]); expect(saveProgress(emptyProgress())).toBe(false); });
+});
+describe('Импорт без потери свежих результатов', () => {
+  it('не перезаписывает более свежую попытку, сохраняет историю и локальную идентичность', () => { const local = emptyProgress(); const attempt = { ...newAttempt('market'), updated: '2026-10-22T00:00:00Z', score: 90 }; local.attempts = [attempt]; const incoming = { ...emptyProgress(), attempts: [{ ...attempt, updated: '2026-10-20T00:00:00Z', score: 30 }, newAttempt('stream')], completedLessons: ['A1'] }; const merged = mergeProgress(local, incoming); expect(merged.attempts[0].score).toBe(90); expect(merged.attempts).toHaveLength(2); expect(merged.profile.guestId).toBe(local.profile.guestId); expect(merged.completedLessons).toEqual(['A1']); });
+  it('позднее сохранение вкладки не стирает результаты другой вкладки', () => { const fresh = emptyProgress(); const a = { ...newAttempt('market'), updated: '2026-10-22T00:00:00Z', score: 90 }; fresh.attempts = [a]; saveProgress(fresh); const stale = { ...fresh, attempts: [{ ...a, updated: '2026-10-20T00:00:00Z', score: 10 }] }; expect(saveProgress(stale)).toBe(true); expect(loadProgress().attempts[0].score).toBe(90); });
+});

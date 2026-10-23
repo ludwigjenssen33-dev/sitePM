@@ -1,0 +1,3 @@
+const aliases:Record<string,string>={home:'/',cases:'/cases',theory:'/learn',progress:'/skills',methodology:'/methodology',account:'/account'};
+export function resolveRoute(path:string,hash=''){if(hash.startsWith('#access_token=')||hash.includes('type=recovery'))return '/account';const raw=hash.replace(/^#/,'');if(raw.startsWith('case/'))return '/mission/'+raw.slice(5);if(raw)return aliases[raw]||'/'+raw.replace(/^\//,'');return path.replace(/\/$/,'')||'/';}
+export function navigate(path:string){const target=aliases[path]|| (path.startsWith('/')?path:'/'+path);history.pushState({},'',target);window.dispatchEvent(new PopStateEvent('popstate'));window.scrollTo({top:0,behavior:'instant'});}

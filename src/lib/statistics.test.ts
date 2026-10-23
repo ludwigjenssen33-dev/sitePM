@@ -2,7 +2,7 @@ import { describe,it,expect } from 'vitest';
 import { absoluteChange,compareProportions,conversion,percent,points,relativeChange } from './statistics';
 import { cases } from '../data/cases';
 import { validateTree } from './metrics';
-import { score,emptyAnswers } from './scoring';
+import { score,emptyAnswers,correctReasons } from './scoring';
 describe('Статистические вычисления',()=>{
 it('одинаковые доли',()=>{const s=compareProportions(100,1000,100,1000);expect(s.pValue).toBeCloseTo(1,5);expect(s.delta).toBe(0);expect(s.ci![0]).toBeLessThan(0);expect(s.ci![1]).toBeGreaterThan(0);});
 it('положительный эффект',()=>{const s=compareProportions(100,1000,200,1000);expect(s.delta).toBeCloseTo(.1);expect(s.pValue).toBeLessThan(.05);expect(s.ci![0]).toBeGreaterThan(0);});
@@ -15,4 +15,4 @@ it('подписочный сервис',()=>{const s=compareProportions(3500,50
 it('доставка',()=>{const s=compareProportions(4000,20000,3800,20000);expect(s.delta).toBeCloseTo(-.01);expect(s.pValue).toBeLessThan(.05);expect(.19*65).toBeCloseTo(12.35);expect(relativeChange(9,12.35)).toBeCloseTo(.372222);});
 it('единицы эффекта',()=>{expect(absoluteChange(.05,.055)).toBeCloseTo(.005);expect(points(.005)).toBe('+0,5 п.п.');expect(percent(.05)).toBe('5 %');expect(relativeChange(0,1)).toBeNull();});
 });
-describe('Данные и рубрика',()=>{for(const c of cases){it(`${c.company}: дерево согласовано`,()=>expect(validateTree(c)).toBe(true));it(`${c.company}: верные ответы = 100`,()=>{const a={...emptyAnswers,node:c.diagnosis,hypothesis:1,primary:0,guardrail:0,interpretation:0,decision:c.decision};expect(score(c,a).reduce((s,r)=>s+r.points,0)).toBe(100);});it(`${c.company}: неверные ответы = 0`,()=>{const a={...emptyAnswers,node:c.metrics[0].id,hypothesis:0,primary:1,guardrail:1,interpretation:1,decision:(c.decision+1)%3};expect(score(c,a).reduce((s,r)=>s+r.points,0)).toBe(0);});}it('частичный диагноз QuickFood',()=>expect(score(cases[2],{...emptyAnswers,node:'margin'})[0].points).toBe(15));});
+describe('Данные и рубрика',()=>{for(const c of cases){it(`${c.company}: дерево согласовано`,()=>expect(validateTree(c)).toBe(true));it(`${c.company}: верные ответы = 100`,()=>{const a={...emptyAnswers,node:c.diagnosis,hypothesis:1,primary:0,guardrail:0,interpretation:0,decision:c.decision,reasons:correctReasons(c)};expect(score(c,a).reduce((s,r)=>s+r.points,0)).toBe(100);});it(`${c.company}: неверные ответы = 0`,()=>{const a={...emptyAnswers,node:c.metrics[0].id,hypothesis:0,primary:1,guardrail:1,interpretation:1,decision:(c.decision+1)%3};expect(score(c,a).reduce((s,r)=>s+r.points,0)).toBe(0);});}it('частичный диагноз QuickFood',()=>expect(score(cases[2],{...emptyAnswers,node:'margin'})[0].points).toBe(15));});
