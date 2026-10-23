@@ -113,7 +113,6 @@ a.brand{color:inherit}
 .hero-gradient{background:linear-gradient(90deg,#4b2fd0 0%,#7a5cff 40%,#ff6a45 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:pl-flow 7s ease-in-out infinite alternate}
 .hero-title-intro{color:#3a4433}
 @media(max-width:560px){.hero-copy h1{font-size:50px!important;letter-spacing:-2.5px!important}.hero-copy .pill{font-size:12px}}
-.hero-star{color:var(--coral)!important;display:inline-block;animation:pl-spin 14s linear infinite}
 .hero-copy>p{color:#3a4433}
 .hero-copy .pill{border-color:#cdbfff;background:#ffffffcc;color:#3b2a99}
 .hero-copy .pill>span{background:var(--coral);box-shadow:0 0 0 4px #ff7a5926;animation:pl-pulse 2.4s ease-in-out infinite}
