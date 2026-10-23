@@ -160,14 +160,27 @@ export async function getAdminOverview():Promise<{profiles:number;attempts:numbe
   const [profiles,attempts,certificates]=await Promise.all([exactCount('profiles'),exactCount('attempts'),exactCount('certificates')]);
   return {profiles,attempts,certificates};
 }
-export type ServerAnalyticsEvent={id:string;user_id:string|null;session_id:string;schema_version:number;occurred_at:string;event_type:string;params:Record<string,string|number|boolean>};
+export type ServerAnalyticsEvent={id:string;user_id:string|null;session_id:string;schema_version:number;occurred_at:string;event_type:string;actor_id?:string|null;device?:'mobile'|'desktop'|'unknown';traffic_source?:'direct'|'search'|'social'|'referral'|'unknown';params:Record<string,string|number|boolean>};
 /** Real events only; missing device/source must remain unknown in a reporting adapter. */
 export async function getServerEvents():Promise<{events:ServerAnalyticsEvent[];truncated:boolean}> {
   if(!await hasAdminRole())throw new Error('Доступ администратора не подтверждён сервером.');
   const since=new Date(Date.now()-30*86400000).toISOString();const events:ServerAnalyticsEvent[]=[];
   for(let offset=0;offset<10000;offset+=1000){
-    const batch=await request<ServerAnalyticsEvent[]>(`/rest/v1/analytics_events?select=id,user_id,session_id,schema_version,occurred_at,event_type,params&occurred_at=gte.${encodeURIComponent(since)}&order=occurred_at.asc,id.asc&offset=${offset}&limit=1000`);
+    const batch=await request<ServerAnalyticsEvent[]>(`/rest/v1/analytics_events?select=id,user_id,session_id,schema_version,occurred_at,event_type,actor_id,device,traffic_source,params&occurred_at=gte.${encodeURIComponent(since)}&order=occurred_at.asc,id.asc&offset=${offset}&limit=1000`);
     events.push(...batch);if(batch.length<1000)return {events,truncated:false};
   }
   return {events,truncated:true};
+}
+
+export type AdminTable='profiles'|'attempts'|'certificates'|'content_versions'|'admin_audit_log';
+export async function getAdminRows(table:AdminTable):Promise<Record<string,unknown>[]>{
+ if(!await hasAdminRole())throw new Error('Доступ администратора не подтверждён сервером.');
+ const selections:Record<AdminTable,string>={profiles:'id,alias,public_ranking,created_at',attempts:'id,user_id,variant_id,status,score,started_at,completed_at',certificates:'id,user_id,course_id,issued_at',content_versions:'id,entity_type,entity_id,version,status,created_at',admin_audit_log:'id,actor_id,action,entity_type,entity_id,occurred_at'};
+ if(!Object.hasOwn(selections,table))throw new Error('Неизвестная таблица.');
+ return request(`/rest/v1/${table}?select=${selections[table]}&limit=200&order=${table==='attempts'?'started_at':table==='certificates'?'issued_at':table==='admin_audit_log'?'occurred_at':'created_at'}.desc`);
+}
+export async function setServerRole(userId:string,role:'learner'|'editor'|'admin'){
+ if(!await hasAdminRole())throw new Error('Нужны права администратора.');
+ if(!/^[0-9a-f-]{36}$/i.test(userId)||!['learner','editor','admin'].includes(role))throw new Error('Некорректная роль или пользователь.');
+ return request('/rest/v1/rpc/admin_set_role',{method:'POST',body:JSON.stringify({p_user_id:userId,p_role:role})});
 }

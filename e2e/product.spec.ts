@@ -7,6 +7,11 @@ import { emptyProgress, newAttempt } from '../src/domain/progress';
 
 // Each Playwright test has an isolated browser context; no user's stored progress is touched.
 async function open(page: Page, path: string) {
+  // Full-mission tests begin at their assigned curriculum position. Navigation locks are tested separately.
+  const missionId=path.startsWith('/mission/')?path.split('/')[2]:null;
+  const prior=missionId?cases.slice(0,cases.findIndex(c=>c.id===missionId)):[];
+  if(prior.length){const seeded=emptyProgress();for(const c of prior){const a=newAttempt(c.id);a.finished=true;a.confirmed=true;a.step=3;a.score=100;seeded.attempts.push(a);seeded.active[c.id]=a.id;}await page.addInitScript(value=>{if(!localStorage.getItem('product-lab-v2'))localStorage.setItem('product-lab-v2',JSON.stringify(value));},seeded);}
+
   await page.goto(path);
   await expect(page.locator('main h1').first()).toBeVisible();
   // Close an optional first-visit introduction without changing the learning flow.
@@ -179,33 +184,10 @@ test('сертификат выдаётся по условиям и скачи�
   await expect(page.locator('.certificate-name')).toHaveText('Тестовый исследователь');
 });
 
-test('демо-админка не предоставляет настоящую роль администратора', async ({ page }) => {
-  await open(page, '/admin');
-  await expect(page.getByText('Демо-просмотр не предоставляет административных прав.', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: 'Сервер · проверка доступа', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('Supabase не настроен');
-  await expect(page.getByRole('button', { name: 'Сохранить черновик на сервере', exact: true })).toHaveCount(0);
+test('админка закрыта без настоящего backend и роли', async ({page})=>{
+ await open(page,'/admin');await expect(page.getByRole('heading',{name:'Админ-панель ждёт подключения'})).toBeVisible();await page.evaluate(()=>{localStorage.setItem('role','admin');localStorage.setItem('isAdmin','true');});await page.reload();await expect(page.getByRole('heading',{name:'Админ-панель ждёт подключения'})).toBeVisible();await expect(page.locator('.analytics-overview-grid')).toHaveCount(0);
 });
-
-test('каждый сегмент воронки кликабелен; фильтры, детализация и CSV работают', async ({ page }) => {
-  await open(page, '/admin');
-  await page.getByRole('button', { name: 'Воронки', exact: true }).click();
-  const segments = page.locator('.funnel-segment');
-  expect(await segments.count()).toBeGreaterThan(1);
-  for (let i = 0; i < await segments.count(); i++) {
-    await segments.nth(i).click();
-    await expect(segments.nth(i)).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('.funnel-detail')).toContainText('Конверсия с предыдущего');
-  }
-  await page.getByLabel('Тип воронки', { exact: true }).selectOption('cases');
-  await page.getByLabel('Период воронки', { exact: true }).selectOption('7');
-  await page.getByLabel(/^Устройство/).selectOption('mobile');
-  await page.getByRole('button', { name: 'Перейти к событиям этапа', exact: true }).click();
-  const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Экспорт CSV', exact: true }).click();
-  const download = await downloadPromise;
-  expect(download.suggestedFilename()).toMatch(/\.csv$/);
-});
+test('учебная воронка кликабельна и явно отделена от метрик сайта',async({page})=>{await open(page,'/lab');await page.getByRole('tab',{name:'Воронка',exact:true}).click();const segments=page.locator('.funnel-segment');expect(await segments.count()).toBeGreaterThan(1);for(let i=0;i<await segments.count();i++){await segments.nth(i).click();await expect(segments.nth(i)).toHaveAttribute('aria-pressed','true');await expect(page.locator('.funnel-detail')).toContainText('Конверсия с предыдущего');}});
 
 test('мобильные основные страницы не переполняют экран 320 px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
@@ -233,3 +215,8 @@ test('аналитика добровольная, не получает зам�
   await page.getByRole('button', { name: 'Отключить аналитику', exact: true }).click();
   expect(await page.evaluate(() => localStorage.getItem('product-lab-events-v1'))).toBeNull();
 });
+
+test('1.3: последовательный путь нельзя обойти ссылкой или локальной ролью',async({page})=>{await page.goto('/mission/stream');await expect(page.getByRole('heading',{name:'Ещё один шаг — и эта миссия откроется'})).toBeVisible();await page.evaluate(()=>{localStorage.setItem('role','admin');localStorage.setItem('isAdmin','true');});await page.reload();await expect(page.getByRole('heading',{name:'Ещё один шаг — и эта миссия откроется'})).toBeVisible();await page.goto('/map');await expect(page.locator('.journey-node')).toHaveCount(9);await expect(page.locator('.journey-node').nth(1)).toHaveAttribute('aria-disabled','true');await expect(page.getByRole('button',{name:'Все миссии сразу'})).toHaveCount(0);});
+test('1.3: окончание миссии открывает следующий шаг и дорожка сохраняется',async({page})=>{await open(page,'/mission/market');await finishMission(page,getCase('market'));await page.getByRole('button',{name:'Следующая миссия ждёт',exact:true}).click();await expect(page).toHaveURL(/\/mission\/stream/);await expect(page.getByRole('heading',{name:'Дерево метрик'})).toBeVisible();await page.goto('/map');await expect(page.locator('.journey-step').nth(0)).toHaveClass(/completed/);await expect(page.locator('.journey-node').nth(1)).toHaveAttribute('aria-disabled','false');});
+test('1.3: результат можно передать ссылкой и скачать PNG без приватных полей',async({page})=>{await open(page,'/mission/market');await finishMission(page,getCase('market'));await page.getByRole('button',{name:'Поделиться результатом',exact:true}).click();const link=await page.getByLabel('Ссылка на результат', {exact:true}).inputValue();expect(link).toContain('/shared?case=market&score=100');expect(link).not.toContain('note');const promise=page.waitForEvent('download');await page.getByRole('button',{name:'Скачать карточку PNG'}).click();const d=await promise;expect(d.suggestedFilename()).toMatch(/\.png$/);const file=await d.path();expect((await readFile(file!)).subarray(0,8)).toEqual(Buffer.from([137,80,78,71,13,10,26,10]));await page.goto(link);await expect(page.locator('.share-card')).toContainText('100');await expect(page.getByText('Балл передан автором ссылки', {exact:false})).toBeVisible();});
+test('1.3: резервная копия сохраняется, неверный импорт не стирает прогресс',async({page})=>{await open(page,'/mission/market');await chooseDiagnosis(page,getCase('market'));await page.goto('/skills');const saved=await page.evaluate(()=>localStorage.getItem('product-lab-v2'));const d=page.waitForEvent('download');await page.getByRole('button',{name:'Сохранить прогресс файлом'}).click();expect((await d).suggestedFilename()).toBe('product-lab-progress.json');await page.getByLabel('Файл резервной копии').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{broken')});await expect(page.getByRole('alert')).toBeVisible();expect(await page.evaluate(()=>localStorage.getItem('product-lab-v2'))).toBe(saved);});
