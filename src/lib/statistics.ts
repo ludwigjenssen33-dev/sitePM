@@ -20,6 +20,16 @@ export function compareProportions(xA:number,nA:number,xB:number,nB:number){
  return {a,b,delta,uplift:relativeChange(a,b),z,applicable,pValue:applicable?Math.max(0,Math.min(1,2*(1-normalCDF(Math.abs(z))))):null,ci:applicable?[delta-1.96*se,delta+1.96*se] as [number,number]:null};
 }
 
+/**
+ * Размер выборки на группу для сравнения двух долей (нормальное приближение):
+ * n = (z₁₋α/₂ + z₁₋β)² · [p₁(1−p₁) + p₂(1−p₂)] / (p₂ − p₁)².
+ * Поддерживаются α = 0,05 / 0,01 и мощность 0,8 / 0,9.
+ */
+export function sampleSizePerGroup(base:number,mde:number,alpha:.05|.01=.05,power:.8|.9=.8){
+ if(!(base>0&&base<1)||!Number.isFinite(mde)||mde===0||!(base+mde>0&&base+mde<1))throw new Error('Некорректная база или минимальный эффект');
+ const za=alpha===.05?1.959963984540054:2.5758293035489;const zb=power===.8?.8416212335729143:1.2815515655446004;const p2=base+mde;
+ return Math.ceil((za+zb)**2*(base*(1-base)+p2*(1-p2))/mde**2);
+}
 /** Wilson score interval for one binomial proportion; defined at 0 and n successes. */
 export function proportionCI(x:number,n:number):[number,number]{
  const p=conversion(x,n),z=1.959963984540054,z2=z*z,denominator=1+z2/n;
