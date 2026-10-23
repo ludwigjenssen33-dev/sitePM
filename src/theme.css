@@ -199,3 +199,7 @@ a.brand{color:inherit}
 @keyframes pl-spin{to{transform:rotate(360deg)}}
 @keyframes pl-pulse{0%,100%{box-shadow:0 0 0 3px #fbc15d26}50%{box-shadow:0 0 0 7px #fbc15d12}}
 @media(prefers-reduced-motion:reduce){.primary:after,.highlight-word:after,.stage-content>.panel,.review-list>.panel,.lesson-grid>.panel,.score-circle,.diagnosis-verdict,.landing-hero:before,.hero-gradient,.hero-star,.hero-copy .pill>span{animation:none!important}.case-card:hover{transform:none}}
+/* Шрифт 3.0: Golos Text (Paratype, OFL) — везде, включая поля ввода и кнопки. */
+:root,body{font-family:'Golos Text Variable','Golos Text',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+button,input,select,textarea{font-family:inherit}
+h1,h2,h3{letter-spacing:-.02em}
