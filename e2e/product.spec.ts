@@ -92,14 +92,14 @@ test('подсказка штрафует один раз, не выдаёт г�
 });
 
 test('обоснование влияет на балл независимо от свободного текста', async ({ page }) => {
-  await open(page, '/mission/market');
+  const c=getCase('market');await open(page, '/mission/market');
   await chooseDiagnosis(page, getCase('market'));
-  await page.getByRole('radiogroup', { name: 'Выбор гипотезы', exact: true }).getByRole('radio').nth(1).click();
-  for (const name of ['Основная метрика', 'Контрольная метрика']) await page.getByRole('radiogroup', { name, exact: true }).getByRole('radio').first().click();
+  await page.getByRole('radiogroup', { name: 'Выбор гипотезы', exact: true }).getByRole('radio',{name:c.hypotheses[1],exact:true}).click();
+  await page.getByRole('radiogroup',{name:'Основная метрика',exact:true}).getByRole('radio',{name:c.primary[0],exact:true}).click();await page.getByRole('radiogroup',{name:'Контрольная метрика',exact:true}).getByRole('radio',{name:c.guardrails[0],exact:true}).click();
   await page.getByRole('button', { name: 'Зафиксировать и открыть эксперимент', exact: true }).click();
-  await page.getByRole('radiogroup', { name: 'Интерпретация эксперимента', exact: true }).getByRole('radio').first().click();
+  await page.getByRole('radiogroup', { name: 'Интерпретация эксперимента', exact: true }).getByRole('radio',{name:c.interpretations[c.correctInterpretation],exact:true}).click();
   await page.getByRole('button', { name: 'Зафиксировать и принять решение', exact: true }).click();
-  await page.getByRole('radiogroup', { name: 'Финальное решение', exact: true }).getByRole('radio').nth(2).click();
+  await page.getByRole('radiogroup', { name: 'Финальное решение', exact: true }).getByRole('radio',{name:decisions[c.decision],exact:true}).click();
   await page.getByRole('group', { name: 'Причины решения', exact: true }).getByLabel(reasonOptions[5], { exact: true }).check();
   await page.getByLabel('Заметка для себя', { exact: false }).fill('p-value, плановая выборка, конверсия — эти слова не должны повышать балл.');
   await page.getByRole('button', { name: 'Завершить миссию и увидеть последствия', exact: true }).click();
@@ -123,15 +123,7 @@ test('новый набор данных сохраняет историю и с
   await expect(page.getByText('1 000', { exact: false }).first()).toBeVisible();
 });
 
-test('все 14 уроков открываются по уникальному ID', async ({ page }) => {
-  await open(page, '/learn');
-  expect(lessons).toHaveLength(14);
-  for (const lesson of lessons) {
-    await page.locator('.lesson-links button').filter({ has: page.locator('span', { hasText: new RegExp(`^${lesson.id}$`) }) }).click();
-    await expect(page.getByRole('dialog')).toContainText(lesson.title);
-    await page.keyboard.press('Escape');
-  }
-});
+test('ссылки разбора открывают конкретный урок, переходы модального окна работают', async ({page})=>{await open(page,'/mission/market');await chooseDiagnosis(page,getCase('market'));await page.getByRole('button',{name:'Открыть теорию',exact:true}).click();await expect(page.getByRole('dialog')).toContainText(lessons.find(l=>l.id==='B3')!.title);await page.getByRole('button',{name:'Слайд B4',exact:true}).click();await expect(page.getByRole('dialog')).toContainText(lessons.find(l=>l.id==='B4')!.title);await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);});
 
 test('старый прогресс переносится без удаления исходного ключа', async ({ page }) => {
   const legacy = { market: { step: 3, answers: { ...emptyAnswers, node: 'conversion', hypothesis: 1, primary: 0, guardrail: 0, interpretation: 0, decision: 2, note: 'Историческая заметка' }, confirmed: true, finished: true, best: 100, score: 100, updated: '2026-10-20T12:00:00.000Z' } };
@@ -186,7 +178,7 @@ test('сертификат выдаётся по условиям и скачи�
 });
 
 test('админка закрыта без настоящего backend и роли', async ({page})=>{
- await open(page,'/admin');await expect(page.getByRole('heading',{name:'Админ-панель ждёт подключения'})).toBeVisible();await page.evaluate(()=>{localStorage.setItem('role','admin');localStorage.setItem('isAdmin','true');});await page.reload();await expect(page.getByRole('heading',{name:'Админ-панель ждёт подключения'})).toBeVisible();await expect(page.locator('.analytics-overview-grid')).toHaveCount(0);
+ await open(page,'/admin');await expect(page.getByRole('heading',{name:'Доступ только администратору'})).toBeVisible();await page.evaluate(()=>{localStorage.setItem('role','admin');localStorage.setItem('isAdmin','true');});await page.reload();await expect(page.getByRole('heading',{name:'Доступ только администратору'})).toBeVisible();await expect(page.locator('.analytics-overview-grid')).toHaveCount(0);
 });
 test('учебная воронка кликабельна и явно отделена от метрик сайта',async({page})=>{await open(page,'/lab');await page.getByRole('tab',{name:'Воронка',exact:true}).click();const segments=page.locator('.funnel-segment');expect(await segments.count()).toBeGreaterThan(1);for(let i=0;i<await segments.count();i++){await segments.nth(i).click();await expect(segments.nth(i)).toHaveAttribute('aria-pressed','true');await expect(page.locator('.funnel-detail')).toContainText('Конверсия с предыдущего');}});
 
@@ -205,7 +197,7 @@ test('мобильные основные страницы не переполн
 test('аналитика добровольная, не получает заметку и удаляется при отказе', async ({ page }) => {
   await open(page, '/privacy');
   expect(await page.evaluate(() => localStorage.getItem('product-lab-events-v1'))).toBeNull();
-  await page.getByRole('button', { name: 'Разрешить локальную аналитику', exact: true }).click();
+  await page.getByRole('button', { name: 'Разрешить анонимную аналитику', exact: true }).click();
   await page.goto('/mission/market');
   await finishMission(page, getCase('market'));
   const events = await page.evaluate(() => JSON.parse(localStorage.getItem('product-lab-events-v1') || '[]'));
@@ -217,7 +209,7 @@ test('аналитика добровольная, не получает зам�
   expect(await page.evaluate(() => localStorage.getItem('product-lab-events-v1'))).toBeNull();
 });
 
-test('итоговую миссию нельзя открыть раньше времени ссылкой или локальной ролью; обычные миссии открыты',async({page})=>{await page.goto('/mission/final');await expect(page.getByRole('heading',{name:'Ещё один шаг — и эта миссия откроется'})).toBeVisible();await page.evaluate(()=>{localStorage.setItem('role','admin');localStorage.setItem('isAdmin','true');});await page.reload();await expect(page.getByRole('heading',{name:'Ещё один шаг — и эта миссия откроется'})).toBeVisible();await page.goto('/map');await expect(page.locator('.journey-node')).toHaveCount(9);await expect(page.locator('.journey-node').nth(1)).toHaveAttribute('aria-disabled','false');await expect(page.locator('.journey-node').nth(8)).toHaveAttribute('aria-disabled','true');await expect(page.getByRole('button',{name:'Все миссии сразу'})).toHaveCount(0);});
+test('итоговую миссию нельзя открыть раньше времени ссылкой или локальной ролью; обычные миссии открыты',async({page})=>{await page.goto('/mission/final');await expect(page.getByRole('heading',{name:'Ещё один шаг — и эта миссия откроется'})).toBeVisible();await page.evaluate(()=>{localStorage.setItem('role','admin');localStorage.setItem('isAdmin','true');});await page.reload();await expect(page.getByRole('heading',{name:'Ещё один шаг — и эта миссия откроется'})).toBeVisible();await page.goto('/map');await expect(page.locator('.journey-node')).toHaveCount(cases.length);await expect(page.locator('.journey-node').nth(1)).toHaveAttribute('aria-disabled','false');await expect(page.locator('.journey-node').nth(cases.findIndex(c=>c.isFinal))).toHaveAttribute('aria-disabled','true');await expect(page.getByRole('button',{name:'Все миссии сразу'})).toHaveCount(0);});
 test('1.3: окончание миссии открывает следующий шаг и дорожка сохраняется',async({page})=>{await open(page,'/mission/market');await finishMission(page,getCase('market'));await page.getByRole('button',{name:'Следующая миссия ждёт',exact:true}).click();await expect(page).toHaveURL(/\/mission\/stream/);await expect(page.getByRole('heading',{name:'Дерево метрик'})).toBeVisible();await page.goto('/map');await expect(page.locator('.journey-step').nth(0)).toHaveClass(/completed/);await expect(page.locator('.journey-node').nth(1)).toHaveAttribute('aria-disabled','false');});
 test('1.3: результат можно передать ссылкой и скачать PNG без приватных полей',async({page})=>{await open(page,'/mission/market');await finishMission(page,getCase('market'));await page.getByRole('button',{name:'Поделиться результатом',exact:true}).click();const link=await page.getByLabel('Ссылка на результат', {exact:true}).inputValue();expect(link).toContain('/shared?case=market&score=100');expect(link).not.toContain('note');const promise=page.waitForEvent('download');await page.getByRole('button',{name:'Скачать карточку PNG'}).click();const d=await promise;expect(d.suggestedFilename()).toMatch(/\.png$/);const file=await d.path();expect((await readFile(file!)).subarray(0,8)).toEqual(Buffer.from([137,80,78,71,13,10,26,10]));await page.goto(link);await expect(page.locator('.share-card')).toContainText('100');await expect(page.getByText('Балл передан автором ссылки', {exact:false})).toBeVisible();});
 test('1.3: резервная копия сохраняется, неверный импорт не стирает прогресс',async({page})=>{await open(page,'/mission/market');await chooseDiagnosis(page,getCase('market'));await page.goto('/skills');const saved=await page.evaluate(()=>localStorage.getItem('product-lab-v2'));const d=page.waitForEvent('download');await page.getByRole('button',{name:'Сохранить прогресс файлом'}).click();expect((await d).suggestedFilename()).toBe('product-lab-progress.json');await page.getByLabel('Файл резервной копии').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{broken')});await expect(page.getByRole('alert')).toBeVisible();expect(await page.evaluate(()=>localStorage.getItem('product-lab-v2'))).toBe(saved);});

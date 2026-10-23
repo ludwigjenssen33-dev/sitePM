@@ -5,4 +5,5 @@ import '@fontsource-variable/golos-text';
 import './styles.css';
 import './theme.css';
 import './courses.css';
+import './design.css';
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);

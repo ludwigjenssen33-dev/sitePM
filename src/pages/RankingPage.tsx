@@ -3,16 +3,13 @@ import {Crown,Eye,EyeOff,Info,Trophy,UserRound} from 'lucide-react';
 import {bestAttempts,type ProgressState} from '../domain/progress';
 import {demoLeaderboard,type LeaderRow} from '../domain/leaderboard';
 import {courses} from '../data/courses';
-import {backendConfigured,getServerLeaderboard} from '../services/supabase';
-import {useAuth} from '../auth/useAuth';
 import Link from '../components/Link';
 import '../features/progress/styles.css';
 /**
  * Рейтинг. С Supabase — подтверждённые сервером результаты; без него — явно помеченный
  * демо-рейтинг с вымышленными участниками и вашим локальным результатом.
  */
-export default function RankingPage({state,onChange}:{state:ProgressState;onChange:(s:ProgressState)=>void}){const auth=useAuth();const [period,setPeriod]=useState<'all'|'week'>('all');const [course,setCourse]=useState('all');const [serverRows,setServerRows]=useState<LeaderRow[]>([]);const [error,setError]=useState('');const [busy,setBusy]=useState(false);const own=bestAttempts(state);const connected=backendConfigured&&!!auth.session;const missionIds=course==='all'?undefined:courses.find(c=>c.id===course)?.missions;
-useEffect(()=>{let alive=true;setServerRows([]);if(!connected)return;setBusy(true);setError('');getServerLeaderboard(period==='week').then(data=>{if(alive)setServerRows(data.map(r=>({...r,demo:false})));}).catch(e=>{if(alive)setError(e instanceof Error?e.message:'Не удалось получить рейтинг.');}).finally(()=>{if(alive)setBusy(false);});return()=>{alive=false;};},[period,connected]);
+export default function RankingPage({state,onChange}:{state:ProgressState;onChange:(s:ProgressState)=>void}){const [period,setPeriod]=useState<'all'|'week'>('all');const [course,setCourse]=useState('all');const [serverRows,setServerRows]=useState<LeaderRow[]>([]);const [error,setError]=useState('');const [busy,setBusy]=useState(false);const own=bestAttempts(state);const connected=false;const missionIds=course==='all'?undefined:courses.find(c=>c.id===course)?.missions;
 const rows=useMemo(()=>connected?serverRows:demoLeaderboard(state,{period,missionIds,includeSelf:state.profile.publicRanking}),[connected,serverRows,state,period,missionIds]);const selfIndex=rows.findIndex(r=>r.self);
 const toggleSelf=()=>onChange({...state,profile:{...state.profile,publicRanking:!state.profile.publicRanking}});
 return <div className="p2-page ranking-page"><div className="p2-heading"><span className="p2-kicker">РЕЙТИНГ</span><h1>Сумма лучших решений</h1><p>Баллы — сумма лучших результатов по уникальным миссиям. Повтор одной миссии не увеличивает сумму без улучшения результата.</p></div>
@@ -22,4 +19,4 @@ return <div className="p2-page ranking-page"><div className="p2-heading"><span c
 {connected&&busy?<p role="status">Загружаем рейтинг с сервера…</p>:error?<p role="alert" className="notice warning">{error}</p>:!rows.length?<div className="empty-state"><Trophy size={35}/><h2>Пока нет результатов</h2><p>Пройдите миссию — и здесь появится первая строка.</p></div>:<>
 <div className="p2-podium">{[1,0,2].map(i=>rows[i]&&<article className={`p2-podium-card place-${i+1} ${rows[i].self?'self':''}`} key={i}><span className="p2-podium-medal">{i===0?<Crown size={27}/>:<Trophy size={24}/>}</span><h2>{rows[i].alias}{rows[i].demo&&<small className="demo-tag">демо</small>}</h2><strong>{rows[i].points}<small> баллов</small></strong><p>{rows[i].completed} миссий · средний {rows[i].average}</p></article>)}</div>
 <section className="p2-card"><h2>Топ-100{!connected&&' · демо'}</h2><div className="table-scroll"><table><thead><tr><th>Место</th><th>Участник</th><th>Баллы</th><th>Миссии</th><th>Средний</th></tr></thead><tbody>{rows.slice(0,100).map((r,i)=><tr key={r.alias+i} className={r.self?'self-row':''}><td>{i+1}</td><td>{r.alias}{r.self&&' (вы)'}{r.demo&&<span className="demo-tag">демо</span>}</td><td>{r.points}</td><td>{r.completed}</td><td>{r.average}</td></tr>)}</tbody></table></div></section></>}
-<p className="section-note">В Connected Mode показываются только участники, согласившиеся на публичность; email не раскрывается.</p></div>;}
+<p className="section-note">Это демонстрация рейтинга. Общий рейтинг реальных людей не подключён; локальные баллы не подтверждены сервером.</p></div>;}
