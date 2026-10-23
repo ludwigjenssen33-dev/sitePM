@@ -27,7 +27,11 @@ describe('Обоснование и подсказки',()=>{
  const c=getCase('market',1);
  const a={...emptyAnswers,node:c.diagnosis,hypothesis:1,primary:0,guardrail:0,interpretation:0,decision:c.decision,reasons:correctReasons(c)};
  it('12 за выбор, 8 за две причины',()=>{expect(score(c,{...a,reasons:[]})[4].points).toBe(12);expect(score(c,{...a,reasons:[0]})[4].points).toBe(16);expect(score(c,a)[4].points).toBe(20);});
- it('ошибочная причина не позволяет получить полный балл',()=>{expect(score(c,{...a,reasons:[0,5]})[4].points).toBe(12);expect(score(c,{...a,reasons:[0,2,5]})[4].points).toBe(12);});
+ it('ошибочная причина не позволяет получить полный балл',()=>{expect(score(c,{...a,reasons:[0,3]})[4].points).toBe(12);expect(score(c,{...a,reasons:[0,2,5]})[4].points).toBe(12);});
+ it('верные причины вычисляются из статистики (как в документе: кейс 1 — ДИ включает ноль и выборка не добрана)',()=>{expect(correctReasons(getCase('market',0))).toEqual([1,2]);expect(correctReasons(getCase('quality'))).toEqual([3]);expect(correctReasons(getCase('food'))).toEqual([0,6]);expect(correctReasons(getCase('recommend'))).toEqual([0,4]);expect(correctReasons(getCase('stream'))).toEqual([0,5]);});
+ it('разбор объясняет неверно выбранную причину на данных кейса',()=>{const m=getCase('market',0);const row=score(m,{...emptyAnswers,decision:0,reasons:[5]})[4];expect(row.explanation).toContain('для этих данных неверно');expect(row.explanation).toMatch(/выборка 10\s000 из 15\s000/);});
+ it('таблица «что можем утверждать» соответствует данным варианта',()=>{const m=getCase('market',0);expect(m.takeaways).toHaveLength(3);expect(m.takeaways![2].claim).toBe('Тест не завершён.');expect(getCase('market',1).takeaways![2].claim).toContain('можно доверять');expect(getCase('quality').takeaways![2].claim).toContain('SRM');expect(getCase('food').takeaways![2].limit).toContain('поюзерных');});
+ it('у каждой миссии свои подсказки по этапам',()=>{const texts=cases.map(c=>c.hints!.join('|'));expect(new Set(texts).size).toBe(cases.length);});
  it('каждая уникальная подсказка стоит 2, повторное открытие бесплатно',()=>{expect(hintPenalty({...a,hints:[0,0,1,3]})).toBe(6);expect(totalScore(c,{...a,hints:[0,1,2,3]})).toBe(92);expect(totalScore(c,{...emptyAnswers,hints:[0,1,2,3]})).toBe(0);});
 });
 describe('Интервалы и SRM',()=>{

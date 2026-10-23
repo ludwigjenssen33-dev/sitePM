@@ -1,0 +1,121 @@
+/*
+ * Product Lab — обновлённая тема поверх styles.css.
+ * Насыщеннее основной фиолетовый, живее лаймовый акцент, тёплый коралловый для выделений,
+ * контрастнее текст. Анимации мягкие и отключаются при prefers-reduced-motion.
+ */
+:root{
+  --ink:#1d2219;--muted:#535b4f;--line:#e0e2d5;
+  --violet:#5b3fd6;--violet-2:#7a5cff;--violet-soft:#efeaff;--violet-line:#d7cdff;
+  --lime:#c6ef5a;--lime-deep:#9fd12a;--coral:#ff7a59;--coral-soft:#fff0ea;
+  --purple:var(--violet);
+  color:var(--ink);
+}
+.muted{color:var(--muted)}
+.eyebrow{color:var(--violet);letter-spacing:1.6px}
+h1,h2,h3{color:var(--ink)}
+
+/* ---------- Кнопки ---------- */
+.primary{background:linear-gradient(135deg,var(--violet-2) 0%,var(--violet) 100%);box-shadow:0 8px 22px -8px #5b3fd6aa;position:relative;overflow:hidden;isolation:isolate}
+.primary:hover:not(:disabled){background:linear-gradient(135deg,#8a70ff 0%,#4c31c4 100%);box-shadow:0 12px 26px -10px #5b3fd6cc}
+.primary:after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,#ffffff55 50%,transparent 70%);transform:translateX(-120%);z-index:-1}
+.primary:hover:not(:disabled):after{animation:pl-shine .9s ease}
+.secondary{border-color:#d3d6c8;color:#2f352b}
+.secondary:hover:not(:disabled){border-color:var(--violet-2);color:var(--violet)}
+a.button{text-decoration:none}
+.text-button{color:var(--violet)}
+.hint-button{background:#fff3cf;border-color:#f0c65a;color:#7a5200;font-weight:600}
+.hint-button:hover:not(:disabled){background:#ffe9a8}
+.theory-link{color:var(--violet);background:var(--violet-soft);border-color:var(--violet-line);font-size:12px;font-weight:600}
+.theory-link:hover{background:#e3dbff;transform:translateY(-1px)}
+.notice+.theory-link{margin:-6px 0 14px}
+.badge{color:#3f473b;border-color:#d6d9cb}
+.badge.green{background:#e6f6c4;color:#3d5a10;border-color:#d1ec98}
+
+/* ---------- Шапка и навигация (ссылки вместо кнопок) ---------- */
+.site-header{background:#fbfaf6ee;backdrop-filter:saturate(1.4) blur(8px)}
+a.brand{color:inherit}
+.brand-mark{background:linear-gradient(135deg,var(--lime) 0%,var(--lime-deep) 100%);color:#24380a;box-shadow:0 6px 14px -6px #9fd12a99}
+.brand i{background:var(--coral)}
+.desktop-nav a{position:relative;font-size:13px;font-weight:550;color:#4c5547;padding:8px 0;white-space:nowrap}
+.desktop-nav a:after{content:'';position:absolute;left:0;right:0;bottom:2px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--violet-2),var(--coral));transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.desktop-nav a:hover,.desktop-nav a.active{color:var(--violet)}
+.desktop-nav a:hover:after,.desktop-nav a.active:after{transform:scaleX(1)}
+.mobile-nav a{display:flex;align-items:center;gap:10px;text-align:left;padding:15px 9px;font-size:13px;color:#3f4a37}
+.mobile-nav a>svg:last-child{margin-left:auto;width:14px}
+.workspace-bar{color:#5d6656}
+.workspace-bar a{padding:0 6px;font-size:12px;color:var(--violet)}
+.workspace-bar>div>a.active{color:#2c1e85;font-weight:650}
+.footer-main>div>a:not(.brand){display:block;padding:5px 0;color:#5b6553;font-size:12px;text-align:left}
+.footer-main>div>a:not(.brand):hover{color:var(--violet)}
+.xp-badge{background:#fff3cf;color:#6b4b00}
+.xp-badge svg{color:#e0a100}
+.account-button{border-color:#cfd3c3}
+.account-button:hover{border-color:var(--violet-2);color:var(--violet)}
+
+/* ---------- Выделения ---------- */
+.highlight-word:after{background:linear-gradient(90deg,var(--lime) 0%,#e7ff8f 100%);transform-origin:left;animation:pl-mark .9s .35s cubic-bezier(.2,.8,.2,1) both}
+.panel{border-color:var(--line)}
+.progress{background:#e7e9dd}
+.progress>span{background:linear-gradient(90deg,var(--violet-2),var(--coral))}
+.notice{background:#f4f5ea;border-color:#dcdfcc}
+.notice p{color:#4e5747}
+.notice svg{color:var(--violet)}
+.option.selected,.reason-options label.selected{background:var(--violet-soft);border-color:var(--violet-2);color:#2c1e85;box-shadow:0 0 0 3px #7a5cff22}
+.option{transition:border-color .18s,background .18s,transform .18s}
+.option:hover:not(.selected){border-color:var(--violet-line);transform:translateX(2px)}
+.score-circle{border-color:var(--violet-2);border-right-color:#e6e0ff;color:var(--violet)}
+.mission-emblem{background:linear-gradient(135deg,var(--violet-soft),#ffe8df);color:var(--violet)}
+.current .journey-token{background:linear-gradient(135deg,var(--violet-2),var(--violet));box-shadow:0 5px 0 #3f2aa3,0 0 0 6px #7a5cff26}
+.completed .journey-token{box-shadow:0 0 0 4px #c6ef5a55}
+
+/* ---------- Дерево метрик: формулы и знаки операций ---------- */
+.metric-tree.v2{padding:26px 0;display:grid;gap:14px;justify-items:center}
+.metric-tree.v2 .tree-root{display:flex;justify-content:center;width:100%}
+.metric-tree.v2 .tree-root .metric-node{max-width:320px}
+.tree-eq{font-size:12px;font-weight:650;color:var(--violet);letter-spacing:.2px}
+.root-eq{padding:4px 12px;border-radius:20px;background:var(--violet-soft)}
+.tree-row{display:flex;align-items:flex-start;justify-content:center;gap:10px;width:100%}
+.tree-col{display:grid;gap:10px;flex:1 1 0;max-width:300px;min-width:0;align-content:start}
+.tree-col:has(.tree-sub){flex-grow:1.6;max-width:420px}
+.tree-col>.metric-node{max-width:none}
+.tree-op{flex:none;margin-top:32px;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid var(--violet-line);color:var(--violet);font-size:19px;font-weight:700;box-shadow:0 4px 10px -6px #5b3fd655}
+.tree-sub{display:grid;gap:8px;padding:10px;border:1px dashed var(--violet-line);border-radius:14px;background:#faf8ff}
+.tree-sub .tree-row{gap:6px}
+.tree-sub .tree-op{width:26px;height:26px;margin-top:26px;font-size:15px}
+.tree-sub .metric-node{padding:11px 12px}
+.tree-sub .metric-node>strong{font-size:18px}
+.tree-sub .metric-node .node-change small{display:none}
+.tree-extra{width:100%;display:grid;gap:8px;padding-top:14px;border-top:1px dashed var(--line)}
+.metric-node{transition:transform .18s,border-color .18s,box-shadow .18s}
+.metric-node.chosen{border-color:var(--violet-2);box-shadow:0 0 0 3px #7a5cff2e}
+.metric-node>strong{color:#3b2a8f}
+@media(max-width:700px){.tree-row{flex-direction:column;align-items:stretch}.tree-col,.tree-col:has(.tree-sub){max-width:none;flex-basis:auto}.tree-op,.tree-sub .tree-op{align-self:center;margin-top:0}}
+
+/* ---------- Разбор диагностики сразу после подтверждения ---------- */
+.diagnosis-verdict{margin-top:18px;border-left:5px solid #c9ccbd;animation:pl-rise .45s cubic-bezier(.2,.8,.2,1) both}
+.diagnosis-verdict.good{border-left-color:#2f9e5b;background:linear-gradient(90deg,#effbf2,#fff 60%)}
+.diagnosis-verdict.partial{border-left-color:#e0a100;background:linear-gradient(90deg,#fff8e1,#fff 60%)}
+.diagnosis-verdict.wrong{border-left-color:var(--coral);background:linear-gradient(90deg,var(--coral-soft),#fff 60%)}
+.diagnosis-verdict p{margin-top:10px}
+.review-badges{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hint-badge{background:#fff3cf;border-color:#f0c65a;color:#7a5200}
+
+/* ---------- Уроки: схема у каждого урока своя ---------- */
+.lesson-scheme>div>span{color:#2e3a24;font-weight:600;background:linear-gradient(135deg,#f3fbdc,#e9f6c4);border-color:#cfe596}
+.lesson-scheme b.scheme-op{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 6px;border-radius:14px;background:#fff;border:1.5px solid var(--violet-line);color:var(--violet);font-weight:700}
+.lesson-scheme>small{display:block;margin-top:6px;color:var(--muted);font-size:12px}
+.lesson-table{margin:18px 0}
+.lesson-table td{vertical-align:top}
+
+/* ---------- Анимации ---------- */
+.stage-content>.panel,.review-list>.panel,.lesson-grid>.panel{animation:pl-rise .5s cubic-bezier(.2,.8,.2,1) both}
+.review-list>.panel:nth-child(2),.lesson-grid>.panel:nth-child(2){animation-delay:.06s}
+.review-list>.panel:nth-child(3),.lesson-grid>.panel:nth-child(3){animation-delay:.12s}
+.review-list>.panel:nth-child(4){animation-delay:.18s}
+.review-list>.panel:nth-child(5){animation-delay:.24s}
+.score-circle{animation:pl-pop .6s cubic-bezier(.2,.8,.2,1.2) both}
+@keyframes pl-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pl-pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@keyframes pl-mark{from{transform:rotate(-2deg) scaleX(0)}to{transform:rotate(-2deg) scaleX(1)}}
+@keyframes pl-shine{to{transform:translateX(120%)}}
+@media(prefers-reduced-motion:reduce){.primary:after,.highlight-word:after,.stage-content>.panel,.review-list>.panel,.lesson-grid>.panel,.score-circle,.diagnosis-verdict{animation:none!important}}
