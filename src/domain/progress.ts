@@ -1,4 +1,5 @@
 import { emptyAnswers, type Answers } from '../lib/scoring';
+import { lessons } from '../data/lessons';
 
 export type Criterion = { name: string; points: number; max: number };
 export type Attempt = {
@@ -86,7 +87,7 @@ export function achievements(state: ProgressState) {
     { id: 'improved', title: 'Новая высота', description: 'Улучшите результат предыдущей попытки.', earned: hasImproved },
     { id: 'streak', title: 'Три точных решения', description: 'Пройдите три разные миссии подряд на 70+ баллов.', earned: bestStreak >= 3 },
     { id: 'master', title: 'Аналитический максимум', description: 'Получите 100 баллов в любой миссии.', earned: best.some(a => a.score === 100) },
-    { id: 'reader', title: 'Теория в деле', description: 'Завершите все 14 уроков.', earned: new Set(state.completedLessons).size >= 14 }
+    { id: 'reader', title: 'Теория в деле', description: `Завершите все ${lessons.length} уроков.`, earned: lessons.every(l => state.completedLessons.includes(l.id)) }
   ];
 }
 export function certificateEligibility(state: ProgressState, requiredCaseIds: string[], finalId: string) {
