@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { cases, getCase, caseVariants, type Case } from '../src/data/cases';
+import { cases, getCase, caseVariants, decisions, type Case } from '../src/data/cases';
 import { lessons } from '../src/data/lessons';
 import { correctReasons, emptyAnswers, reasonOptions, score } from '../src/lib/scoring';
 import { emptyProgress, newAttempt } from '../src/domain/progress';
@@ -34,7 +34,7 @@ async function finishMission(page: Page, c: Case, fromStart = true) {
   await expect(page.getByText('Можно ли доверять тесту', { exact: false })).toBeVisible();
   await page.getByRole('radiogroup', { name: 'Интерпретация эксперимента', exact: true }).getByRole('radio', { name: c.interpretations[c.correctInterpretation], exact: true }).click();
   await page.getByRole('button', { name: 'Зафиксировать и принять решение', exact: true }).click();
-  await page.getByRole('radiogroup', { name: 'Финальное решение', exact: true }).getByRole('radio').nth(c.decision).click();
+  await page.getByRole('radiogroup', { name: 'Финальное решение', exact: true }).getByRole('radio', { name: decisions[c.decision], exact: true }).click();
   const reasons = page.getByRole('group', { name: 'Причины решения', exact: true });
   for (const index of correctReasons(c)) await reasons.getByLabel(reasonOptions[index], { exact: true }).check();
   await page.getByLabel('Заметка для себя', { exact: false }).fill('Учебная заметка для проверки сохранения.');

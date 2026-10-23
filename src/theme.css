@@ -121,6 +121,22 @@ a.brand{color:inherit}
 .benefit-icon{background:linear-gradient(135deg,#efeaff,#e6f9b8)!important;color:var(--violet)!important;box-shadow:0 8px 18px -10px #5b3fd680}
 .program-number{background:linear-gradient(135deg,var(--violet-2),var(--coral));-webkit-background-clip:text;background-clip:text;color:transparent!important}
 
+/* ---------- Подпись к ИИ-иллюстрации: читаемая, а не микроскопическая ---------- */
+.photo-caption{font-size:12px!important;color:#4a5443!important;letter-spacing:.2px;margin-top:12px!important}
+.photo-caption:before{content:'ИИ';display:inline-block;margin-right:6px;padding:1px 6px;border-radius:6px;background:var(--violet-soft);color:var(--violet);font-weight:700;font-size:11px}
+
+/* ---------- Ловушки вместо демонстрационных отзывов ---------- */
+.trap{display:flex;flex-direction:column;gap:12px;transition:transform .25s,box-shadow .25s}
+.trap:hover{transform:translateY(-4px);box-shadow:0 20px 36px -22px #5b3fd680}
+.trap-label{align-self:flex-start;padding:4px 10px;border-radius:14px;background:var(--coral-soft);color:#b8421f;font-size:12px;font-weight:700;letter-spacing:1.2px}
+.trap .trap-myth{font-size:19px!important;line-height:1.45!important;color:var(--ink)!important;font-weight:650;text-decoration:line-through;text-decoration-color:#ff7a5999;text-decoration-thickness:2px;flex:none!important}
+.trap .trap-fact{display:flex;gap:9px;align-items:flex-start;font-size:15px!important;color:#2f3a28!important;flex:1}
+.trap .trap-fact svg{color:#1f8a4c;margin-top:4px}
+.trap-link{width:100%;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--violet-line);background:#ffffffb3;transition:background .2s,border-color .2s}
+.trap-link:hover{background:var(--violet-soft);border-color:var(--violet-2)}
+.trap-link>svg{margin-left:auto;color:var(--violet)}
+.trap-link>span{color:var(--violet)!important}
+
 /* ---------- Карточки миссий ---------- */
 .case-card{position:relative;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
 .case-card:before{content:'';position:absolute;left:0;right:0;top:0;height:4px;border-radius:20px 20px 0 0;background:linear-gradient(90deg,var(--violet-2),var(--coral));opacity:.0;transition:opacity .25s;z-index:2}

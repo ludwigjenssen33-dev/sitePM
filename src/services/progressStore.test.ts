@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { emptyAnswers } from '../lib/scoring';
+import { emptyAnswers, reasonOptions } from '../lib/scoring';
+import { decisions } from '../data/cases';
 import { emptyProgress, newAttempt } from '../domain/progress';
 import { legacyProgressKey, loadProgress, mergeProgress, migrateLegacy, parseProgress, progressKey, saveProgress } from './progressStore';
 let memory: Map<string, string>;
@@ -12,6 +13,7 @@ describe('Совместимость хранения', () => {
   it('сохраняет неизвестные валидные caseId для будущего контента', () => { const state = { ...emptyProgress(), attempts: [newAttempt('future-mission')] }; expect(parseProgress(state)?.attempts).toHaveLength(1); });
   it('невалидный JSON не приводит к падению; при сохранении создаётся recovery', () => { memory.set(progressKey, '{broken'); const state = loadProgress(); expect(saveProgress(state)).toBe(true); expect([...memory.keys()].some(key => key.startsWith(progressKey + '-recovery-'))).toBe(true); });
   it('не допускает частичных или некорректных числовых записей', () => { const state = emptyProgress(); const malformed = { ...newAttempt('market'), score: NaN }; expect(parseProgress({ ...state, attempts: [malformed] })?.attempts).toHaveLength(0); });
+  it('сохраняет попытку с любой допустимой причиной и решением, включая последние в списке', () => { const a = { ...newAttempt('food'), finished: true, step: 3, score: 80, answers: { ...emptyAnswers, decision: decisions.length - 1, reasons: [0, reasonOptions.length - 1] } }; const parsed = parseProgress({ ...emptyProgress(), attempts: [a] }); expect(parsed?.attempts).toHaveLength(1); expect(parsed?.attempts[0].answers.reasons).toEqual([0, reasonOptions.length - 1]); });
   it('сообщает об отказе хранилища', () => { Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem() { throw new Error('denied'); }, setItem() { throw new Error('denied'); } } }); expect(loadProgress().attempts).toEqual([]); expect(saveProgress(emptyProgress())).toBe(false); });
 });
 describe('Импорт без потери свежих результатов', () => {

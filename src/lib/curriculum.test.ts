@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {cases,caseVariants,getCase} from '../data/cases';
+import {cases,caseVariants,decisions,getCase} from '../data/cases';
 import {lessons,lessonGroups} from '../data/lessons';
 import {score,emptyAnswers,totalScore,hintPenalty,correctReasons,recommendedDecision} from './scoring';
 import {proportionCI,sampleRatioMismatch,compareProportions} from './statistics';
@@ -12,7 +12,7 @@ describe('Версии учебных сценариев',()=>{
    expect(validateTree(variant)).toBe(true);
    expect(variant.decision).toBe(recommendedDecision(variant));
    expect(variant.hints).toHaveLength(4);
-   expect(variant.consequences).toHaveLength(3);
+   expect(variant.consequences).toHaveLength(decisions.length);
    expect(variant.takeaways?.length).toBeGreaterThan(0);
    const a={...emptyAnswers,node:variant.diagnosis,hypothesis:1,primary:0,guardrail:0,interpretation:0,decision:variant.decision,reasons:correctReasons(variant),hints:[]};
    expect(totalScore(variant,a)).toBe(100);
@@ -31,6 +31,8 @@ describe('Обоснование и подсказки',()=>{
  it('верные причины вычисляются из статистики (как в документе: кейс 1 — ДИ включает ноль и выборка не добрана)',()=>{expect(correctReasons(getCase('market',0))).toEqual([1,2]);expect(correctReasons(getCase('quality'))).toEqual([3]);expect(correctReasons(getCase('food'))).toEqual([0,6]);expect(correctReasons(getCase('recommend'))).toEqual([0,4]);expect(correctReasons(getCase('stream'))).toEqual([0,5]);});
  it('разбор объясняет неверно выбранную причину на данных кейса',()=>{const m=getCase('market',0);const row=score(m,{...emptyAnswers,decision:0,reasons:[5]})[4];expect(row.explanation).toContain('для этих данных неверно');expect(row.explanation).toMatch(/выборка 10\s000 из 15\s000/);});
  it('таблица «что можем утверждать» соответствует данным варианта',()=>{const m=getCase('market',0);expect(m.takeaways).toHaveLength(3);expect(m.takeaways![2].claim).toBe('Тест не завершён.');expect(getCase('market',1).takeaways![2].claim).toContain('можно доверять');expect(getCase('quality').takeaways![2].claim).toContain('SRM');expect(getCase('food').takeaways![2].limit).toContain('поюзерных');});
+ it('компромисс метрик (QuickFood) решается ограниченным пилотом, как в уроке C5',()=>{for(const v of caseVariants('food')){expect(v.decision).toBe(3);expect(recommendedDecision(v)).toBe(3);const a={...emptyAnswers,node:v.diagnosis,hypothesis:1,primary:0,guardrail:0,interpretation:0,reasons:correctReasons(v)};expect(score(v,{...a,decision:3})[4].points).toBe(20);expect(score(v,{...a,decision:1})[4].points).toBe(14);expect(score(v,{...a,decision:0})[4].points).toBe(8);}expect(lessons.find(l=>l.id==='C5')!.table!.rows.map(r=>r[0])).toContain('Ограниченный пилот');});
+ it('пилот вместо подтверждённого внедрения — частичный балл, при незавершённом тесте — ноль',()=>{expect(score(getCase('stream'),{...emptyAnswers,decision:3})[4].points).toBe(6);expect(score(getCase('market',0),{...emptyAnswers,decision:3})[4].points).toBe(0);});
  it('у каждой миссии свои подсказки по этапам',()=>{const texts=cases.map(c=>c.hints!.join('|'));expect(new Set(texts).size).toBe(cases.length);});
  it('каждая уникальная подсказка стоит 2, повторное открытие бесплатно',()=>{expect(hintPenalty({...a,hints:[0,0,1,3]})).toBe(6);expect(totalScore(c,{...a,hints:[0,1,2,3]})).toBe(92);expect(totalScore(c,{...emptyAnswers,hints:[0,1,2,3]})).toBe(0);});
 });

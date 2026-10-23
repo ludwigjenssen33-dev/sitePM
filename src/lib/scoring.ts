@@ -1,4 +1,4 @@
-import type { Case } from '../data/cases';
+import { decisions,type Case } from '../data/cases';
 import { compareProportions,points,sampleRatioMismatch } from './statistics';
 export type Answers={node:string;hypothesis:number;primary:number;guardrail:number;interpretation:number;decision:number;note:string;reasons?:number[];hints?:number[]};
 export const emptyAnswers:Answers={node:'',hypothesis:-1,primary:-1,guardrail:-1,interpretation:-1,decision:-1,note:'',reasons:[],hints:[]};
@@ -17,9 +17,12 @@ export const criterionStage=[0,1,1,2,3];
 /** Урок, на который ведёт подсказка каждого этапа. */
 export const hintLesson=['A3','B2','C2','C5'];
 function facts(c:Case){const nB=c.nB??c.n;const s=compareProportions(c.xA,c.n,c.xB,nB);return {s,nB,srm:c.srm==='failed'||sampleRatioMismatch(c.n,nB).mismatch,sig:s.pValue!==null&&s.pValue<.05,ciZero:!s.ci||(s.ci[0]<=0&&s.ci[1]>=0),reached:c.n>=c.planned&&nB>=c.planned};}
+/** 0 — внедрить для всех, 1 — не внедрять, 2 — продолжить, 3 — ограниченный пилот (компромисс метрик, урок C5). */
 export function recommendedDecision(c:Case){
  const f=facts(c);
- if(f.srm||c.guardrailStatus==='failed'||c.economicsUncertain||c.guardrailStatus==='unknown')return 1;
+ if(f.srm||c.guardrailStatus==='failed')return 1;
+ if(c.economicsUncertain)return 3;
+ if(c.guardrailStatus==='unknown')return 1;
  if(!f.reached)return 2;
  return f.sig&&f.s.delta>0?0:1;
 }
@@ -42,6 +45,8 @@ function reasonPoints(c:Case,a:Answers){
  const expected=correctReasons(c);const matches=chosen.filter(i=>expected.includes(i)).length;
  return Math.max(0,Math.round(8*(matches-(chosen.length-matches))/expected.length));
 }
+/** 12 за верное решение; 6 — за осторожный соседний вариант (пилот вместо полного внедрения и наоборот «не для всех»). */
+export function decisionPoints(c:Case,chosen:number){if(chosen===c.decision)return 12;if(c.decision===3&&chosen===1)return 6;if(c.decision===0&&chosen===3)return 6;return 0;}
 export function hintPenalty(a:Answers){return [...new Set(a.hints||[])].filter(v=>Number.isInteger(v)&&v>=0&&v<=3).length*2;}
 /** Узел на уровень выше правильного ответа в той же ветке: верное направление, частичный балл. */
 export function isParentOfDiagnosis(c:Case,node:string){const m=c.metrics.find(x=>x.id===node);return !!m&&m.level>0&&!!c.checks?.some(k=>k.target===node&&k.inputs.includes(c.diagnosis));}
@@ -58,7 +63,7 @@ export function score(c:Case,a:Answers){
   {name:'Гипотеза',max:20,points:a.hypothesis===1?20:0,correct:c.hypotheses[1],selected:c.hypotheses[a.hypothesis]??'Не выбрано',explanation:`Гипотеза должна быть связана с диагностикой и описывать проверяемый механизм. Она остаётся предположением, пока не проверена.${a.hypothesis===1?'':why(c.why?.hypotheses,a.hypothesis)}`,slides:['B2','B3']},
   {name:'Метрики эксперимента',max:15,points:(a.primary===0?10:0)+(a.guardrail===0?5:0),correct:`Основная: ${c.primary[0]}. Контрольная: ${c.guardrails[0]}.`,selected:`Основная: ${c.primary[a.primary]??'не выбрана'}. Контрольная: ${c.guardrails[a.guardrail]??'не выбрана'}.`,explanation:`Основная метрика — 10 баллов, контрольная — 5. Контрольный показатель нужен для оценки побочных эффектов.${a.primary===0?'':why(c.why?.primary,a.primary)}${a.guardrail===0?'':why(c.why?.guardrails,a.guardrail)}`,slides:['B4','C4']},
   {name:'Интерпретация',max:20,points:a.interpretation===c.correctInterpretation?20:0,correct:c.interpretations[c.correctInterpretation],selected:c.interpretations[a.interpretation]??'Не выбрано',explanation:`${c.srm==='failed'?'При нарушении распределения групп p-value основной метрики не устраняет проблему качества.':c.economicsUncertain?'Статистика конверсии не переносится автоматически на денежную метрику.':'Вывод ограничен выбранной метрикой, аудиторией, периодом и качеством дизайна. Отсутствие значимости не доказывает отсутствие эффекта.'}${a.interpretation===c.correctInterpretation?'':why(c.why?.interpretations,a.interpretation)}`,slides:['C2','C3']},
-  {name:'Решение',max:20,points:(a.decision===c.decision?12:0)+reasonPoints(c,a),correct:`${['Внедрить изменение','Не внедрять','Продолжить эксперимент'][c.decision]}. Причины: ${reasons.map(i=>reasonOptions[i]).join(' ')}`,selected:`${['Внедрить изменение','Не внедрять','Продолжить эксперимент'][a.decision]??'Не выбрано'}. Причины: ${(a.reasons||[]).map(i=>reasonOptions[i]??'Недопустимый вариант').join(' ')||'не выбраны'}`,explanation:`${c.explanation} ${rf.data}${rf.lines.length?' '+rf.lines.join(' '):''} Выбор решения — 12 баллов, обоснование — 8: доля верных причин с вычетом неверных. Текстовое поле не оценивается.`,slides:['B5','C5']}
+  {name:'Решение',max:20,points:decisionPoints(c,a.decision)+reasonPoints(c,a),correct:`${decisions[c.decision]}. Причины: ${reasons.map(i=>reasonOptions[i]).join(' ')}`,selected:`${decisions[a.decision]??'Не выбрано'}. Причины: ${(a.reasons||[]).map(i=>reasonOptions[i]??'Недопустимый вариант').join(' ')||'не выбраны'}`,explanation:`${c.explanation} ${rf.data}${rf.lines.length?' '+rf.lines.join(' '):''} ${a.decision!==c.decision&&decisionPoints(c,a.decision)>0?'Выбранное решение осторожное и близко к верному — 6 из 12 за выбор. ':''}Выбор решения — 12 баллов, обоснование — 8: доля верных причин с вычетом неверных. Текстовое поле не оценивается.`,slides:['B5','C5']}
  ];
 }
 export function totalScore(c:Case,a:Answers){return Math.max(0,score(c,a).reduce((sum,row)=>sum+row.points,0)-hintPenalty(a));}

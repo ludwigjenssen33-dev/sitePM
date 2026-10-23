@@ -1,4 +1,4 @@
-import { emptyAnswers, type Answers } from '../lib/scoring';
+import { emptyAnswers, reasonOptions, type Answers } from '../lib/scoring';
 import { emptyProgress, criterionNames, criterionMaxima, type Attempt, type Certificate, type ProgressState } from '../domain/progress';
 
 export const progressKey = 'product-lab-v2';
@@ -13,7 +13,7 @@ function parseAnswers(value: unknown): Answers | null {
     if (!Number.isInteger(value[field]) || (value[field] as number) < -1 || (value[field] as number) > 30) return null;
   }
   for (const field of ['reasons', 'hints']) {
-    if (value[field] !== undefined && (!Array.isArray(value[field]) || !(value[field] as unknown[]).every(v => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= (field === 'hints' ? 3 : 5)))) return null;
+    if (value[field] !== undefined && (!Array.isArray(value[field]) || !(value[field] as unknown[]).every(v => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= (field === 'hints' ? 3 : reasonOptions.length - 1)))) return null;
   }
   return { node: value.node, note: value.note, hypothesis: value.hypothesis as number, primary: value.primary as number, guardrail: value.guardrail as number, interpretation: value.interpretation as number, decision: value.decision as number, reasons: [...new Set((value.reasons as number[] | undefined) ?? [])], hints: [...new Set((value.hints as number[] | undefined) ?? [])] };
 }
