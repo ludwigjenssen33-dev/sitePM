@@ -6,7 +6,7 @@ import {proportionCI,sampleRatioMismatch,compareProportions} from './statistics'
 import {validateTree} from './metrics';
 
 describe('Версии учебных сценариев',()=>{
- it('9 самостоятельных миссий и 14 адресуемых уроков',()=>{expect(cases.length).toBeGreaterThanOrEqual(9);expect(cases.filter(c=>c.isFinal)).toHaveLength(1);expect(lessons).toHaveLength(14);expect(lessonGroups.map(g=>g.count)).toEqual([4,5,5]);expect(new Set(lessons.map(l=>l.id)).size).toBe(14);});
+ it('9+ самостоятельных миссий и 39 адресуемых уроков в пяти курсах',()=>{expect(cases.length).toBeGreaterThanOrEqual(9);expect(cases.filter(c=>c.isFinal)).toHaveLength(1);expect(lessons).toHaveLength(39);expect(lessonGroups.map(g=>g.count)).toEqual([10,8,10,6,5]);expect(new Set(lessons.map(l=>l.id)).size).toBe(39);});
  for(const c of cases)for(const [i,variant] of caseVariants(c.id).entries()){
   it(`${c.company}: вариант ${i+1} имеет корректные данные и рубрику`,()=>{
    expect(validateTree(variant)).toBe(true);

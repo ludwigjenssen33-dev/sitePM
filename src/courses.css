@@ -1,0 +1,226 @@
+/* Product Lab 3.0: курсы, уроки, тренажёры, кабинет и рейтинг. Только токены из theme.css. */
+
+/* ---------- Навигация ---------- */
+.site-header{position:sticky;top:0}
+.desktop-nav a:focus-visible,.mobile-nav a:focus-visible,.cabinet-tabs a:focus-visible,.course-card:focus-visible,.lesson-row:focus-visible{outline:3px solid var(--primary-line);outline-offset:2px;border-radius:8px}
+.xp-badge{text-decoration:none;border-radius:20px;padding:6px 11px;font-weight:600;transition:transform .15s}
+.xp-badge:hover{transform:translateY(-1px)}
+.account-button{text-decoration:none}
+.mobile-nav{top:100%;z-index:40}
+.mobile-nav a.active{color:var(--primary);font-weight:650;background:var(--primary-soft);border-radius:10px}
+.workspace-bar>div:last-child a{color:var(--muted);text-decoration:none;padding:4px 8px;border-radius:8px}
+.workspace-bar>div:last-child a:hover,.workspace-bar>div:last-child a.active{color:var(--primary);background:var(--primary-soft)}
+.workspace-bar .resume-link{display:inline-flex;align-items:center;gap:6px;color:var(--primary)!important;font-weight:650;background:var(--primary-soft)}
+@media(max-width:1100px){.desktop-nav{display:none}.menu-button{display:grid;place-items:center;width:40px;height:40px;color:var(--ink)}.mobile-nav{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:10px 16px 18px;position:absolute;left:0;right:0;background:var(--surface);box-shadow:var(--shadow);border-bottom:1px solid var(--line)}.mobile-nav a{min-height:48px}}
+@media(max-width:480px){.mobile-nav{grid-template-columns:1fr}}
+
+/* ---------- Общие элементы ---------- */
+.breadcrumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:26px 0 10px;font-size:14px;color:var(--subtle)}
+.breadcrumbs a{color:var(--primary);text-decoration:none}
+.breadcrumbs a:hover{text-decoration:underline}
+.breadcrumbs [aria-current]{color:var(--ink);font-weight:600}
+.badge.warn{background:var(--warning-soft);color:var(--gold-deep);border-color:#fde68a}
+.badge.done-badge{background:var(--success-soft);color:var(--success);border-color:#bbf7d0}
+.badge.next-badge{background:var(--primary-soft);color:var(--primary);border-color:var(--primary-line)}
+.button.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.button.danger:hover{background:#b91c1c}
+.button:disabled,.button[aria-disabled=true]{opacity:.5;cursor:not-allowed}
+.button:focus-visible{outline:3px solid var(--primary-line);outline-offset:2px}
+.text-button{display:inline-flex;align-items:center;gap:6px;color:var(--primary);font-weight:600;text-decoration:none}
+.text-button:hover{text-decoration:underline}
+.muted{color:var(--muted)}
+.select-field{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.select-field select{min-height:40px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);padding:6px 10px;background:var(--surface);color:var(--ink);font:inherit}
+.select-field select:focus-visible{outline:3px solid var(--primary-line)}
+.button-row{display:flex;flex-wrap:wrap;gap:12px}
+
+/* ---------- Каталог курсов ---------- */
+.courses-toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:22px}
+.search-field{flex:1 1 360px;display:flex;align-items:center;gap:10px;min-height:50px;padding:0 16px;border:1px solid var(--line-strong);border-radius:14px;background:var(--surface);color:var(--subtle);transition:border-color .15s,box-shadow .15s}
+.search-field:focus-within{border-color:var(--primary-2);box-shadow:0 0 0 4px var(--primary-soft)}
+.search-field input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:var(--ink)}
+.courses-total{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:15px}
+.courses-total b{color:var(--ink)}
+.search-results{margin-bottom:24px}
+.search-results h2{font-size:18px;margin:0 0 12px}
+.search-results ul,.course-side ul,.recommend-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.search-results a{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;text-decoration:none;color:var(--ink);border:1px solid var(--line)}
+.search-results a:hover{border-color:var(--primary-line);background:var(--primary-soft)}
+.search-results a>span:nth-child(2){flex:1;display:grid}
+.search-results small,.lesson-row small,.course-side small{color:var(--subtle);font-size:13px}
+.lesson-id{flex-shrink:0;display:inline-grid;place-items:center;min-width:38px;height:30px;padding:0 6px;border-radius:8px;background:var(--surface-3);color:var(--primary);font-weight:700;font-size:13px}
+.course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.course-card{--tone:var(--primary);--tone-soft:var(--primary-soft);position:relative;display:flex;flex-direction:column;gap:12px;padding:24px;border:1px solid var(--line);border-top:5px solid var(--tone);border-radius:var(--radius);background:var(--surface);color:var(--ink);text-decoration:none;box-shadow:var(--shadow-sm);transition:transform .2s,box-shadow .2s,border-color .2s}
+.course-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--primary-line)}
+.course-card:active{transform:translateY(0)}
+.course-card h2{font-size:22px;margin:0;letter-spacing:-.4px}
+.course-card p{margin:0;color:var(--muted)}
+.course-card-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.course-number{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tone)}
+.course-skills{display:flex;flex-wrap:wrap;gap:6px}
+.course-skills span{font-size:13px;padding:4px 10px;border-radius:20px;background:var(--tone-soft,var(--primary-soft));color:var(--ink)}
+.course-card-progress{display:grid;gap:7px;font-size:14px;color:var(--muted);margin-top:auto}
+.course-card-progress span{display:inline-flex;align-items:center;gap:6px}
+.course-cta{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--tone)}
+.course-card:hover .course-cta svg{transform:translateX(3px)}
+.course-cta svg{transition:transform .2s}
+.course-meta{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--subtle)}
+.tone-blue{--tone:var(--primary);--tone-soft:var(--primary-soft)}
+.tone-teal{--tone:var(--accent-deep);--tone-soft:var(--accent-soft)}
+.tone-gold{--tone:var(--gold-deep);--tone-soft:var(--gold-soft)}
+.tone-indigo{--tone:#4338ca;--tone-soft:#eef2ff}
+.tone-slate{--tone:#334155;--tone-soft:var(--surface-3)}
+.progress{background:var(--surface-3)}
+.progress>span{background:linear-gradient(90deg,var(--primary-2),var(--accent))}
+
+/* ---------- Программа курса ---------- */
+.course-hero{--tone:var(--primary);display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:center;padding:34px;margin:6px 0 26px;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--surface) 0%,var(--surface-2) 100%);border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.course-hero h1{font-size:38px;margin:12px 0 8px;letter-spacing:-1px}
+.course-hero p{color:var(--muted);margin:0 0 14px}
+.course-hero-progress{display:grid;gap:8px;padding:22px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--line)}
+.course-hero-progress strong{font-size:40px;line-height:1;color:var(--tone)}
+.course-hero-progress span{color:var(--muted)}
+.course-hero-progress .button{margin-top:8px}
+.course-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+.module-list{display:grid;gap:18px}
+.module header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px}
+.module header h2{font-size:20px;margin:0;flex:1}
+.module-number{font-size:13px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:1px}
+.module ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.lesson-row{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid transparent;text-decoration:none;color:var(--ink);text-align:left;background:transparent;transition:background .15s,border-color .15s}
+.lesson-row:hover{background:var(--surface-2);border-color:var(--line)}
+.lesson-row>svg:first-child{flex-shrink:0;color:var(--line-strong)}
+.lesson-row.done>svg:first-child{color:var(--success)}
+.lesson-row.next{background:var(--primary-soft);border-color:var(--primary-line)}
+.lesson-row.next>svg:first-child{color:var(--primary)}
+.lesson-row-text{flex:1;display:grid;gap:2px;min-width:0}
+.lesson-row>svg:last-child{flex-shrink:0;color:var(--subtle)}
+.course-side{position:sticky;top:110px}
+.course-side h2{font-size:18px;margin:0 0 6px}
+.course-side a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;text-decoration:none;color:var(--ink);border:1px solid var(--line)}
+.course-side a:hover{border-color:var(--accent);background:var(--accent-soft)}
+.course-side a>span{flex:1;display:grid}
+.course-side a>svg:first-child{color:var(--accent-deep)}
+
+/* ---------- Страница урока ---------- */
+.lesson-layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:26px;align-items:start;padding-bottom:40px}
+.lesson-nav{position:sticky;top:100px;max-height:calc(100vh - 120px);overflow:auto;padding:18px;display:grid;gap:14px}
+.lesson-nav-progress{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+.lesson-nav-module strong{display:block;font-size:13px;color:var(--subtle);margin-bottom:6px}
+.lesson-nav-module ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.lesson-nav-module a{display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border-radius:9px;font-size:14px;color:var(--ink);text-decoration:none;line-height:1.35}
+.lesson-nav-module a svg{flex-shrink:0;margin-top:1px;color:var(--line-strong)}
+.lesson-nav-module a:hover{background:var(--surface-2)}
+.lesson-nav-module a.active{background:var(--primary-soft);color:var(--primary);font-weight:650}
+.lesson-nav-module a.active svg{color:var(--primary)}
+.lesson-article{display:grid;gap:18px;min-width:0}
+.lesson-header h1{font-size:36px;margin:10px 0 8px;letter-spacing:-1px}
+.lesson-block{padding:24px;border-radius:var(--radius);border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow-sm)}
+.lesson-block h2{display:flex;align-items:center;gap:9px;font-size:19px;margin:0 0 12px}
+.lesson-block h2 svg{color:var(--primary)}
+.lesson-block>p{margin:0;color:var(--muted);font-size:16px;line-height:1.65}
+.lesson-block.problem{border-left:5px solid var(--gold);background:var(--gold-soft)}
+.lesson-block.problem h2 svg{color:var(--gold-deep)}
+.lesson-block.apply{border-left:5px solid var(--accent);background:var(--accent-soft)}
+.lesson-block.apply .button{margin-top:14px}
+.lesson-block.summary{border-left:5px solid var(--primary);background:var(--primary-soft)}
+.lesson-block.literature a{color:var(--primary)}
+.lesson-block .options{margin:14px 0}
+.practice-feedback{margin-top:14px;padding:14px 16px;border-radius:12px;line-height:1.55}
+.practice-feedback.good{background:var(--success-soft);color:#14532d;border:1px solid #bbf7d0}
+.practice-feedback.bad{background:var(--danger-soft);color:#7f1d1d;border:1px solid #fecaca}
+.option.correct{border-color:var(--success)!important;background:var(--success-soft)!important}
+.option.wrong{border-color:var(--danger)!important;background:var(--danger-soft)!important}
+.lesson-footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:6px}
+.next-step{display:flex;flex-wrap:wrap;align-items:center;gap:16px;border-color:var(--gold);background:var(--gold-soft)}
+.next-step>svg{color:var(--gold-deep)}
+.next-step>div:nth-child(2){flex:1;min-width:220px}
+.next-step h3{margin:0 0 4px}
+.next-step p{margin:0;color:var(--muted)}
+
+/* ---------- Тренажёры уроков ---------- */
+.lesson-widget{display:grid;gap:14px}
+.lesson-widget h3{margin:0;font-size:16px;color:var(--ink)}
+.widget-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.widget-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.widget-field{display:grid;gap:6px;font-size:14px;color:var(--muted)}
+.widget-input{min-height:44px;width:100%;border:1px solid var(--line-strong);border-radius:var(--radius-sm);padding:8px 12px;font:inherit;font-size:16px;color:var(--ink);background:var(--surface)}
+.widget-input:focus-visible{outline:none;border-color:var(--primary-2);box-shadow:0 0 0 4px var(--primary-soft)}
+.widget-input[aria-invalid=true]{border-color:var(--danger)}
+.widget-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.widget-out{display:grid;gap:3px;padding:12px 14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.widget-out strong{font-size:20px;color:var(--ink)}
+.widget-out.good{background:var(--success-soft);border-color:#bbf7d0}
+.widget-out.good strong{color:var(--success)}
+.widget-out.bad{background:var(--danger-soft);border-color:#fecaca}
+.widget-out.bad strong{color:var(--danger)}
+.widget-out.warn{background:var(--warning-soft);border-color:#fde68a}
+.widget-out.warn strong{color:var(--gold-deep)}
+.widget-error{padding:10px 14px;border-radius:10px;background:var(--danger-soft);color:#7f1d1d;font-size:14px}
+.widget-note{margin:0;font-size:14px;color:var(--subtle)}
+.widget-bars{display:grid;gap:8px}
+.widget-bars>div{display:grid;grid-template-columns:120px 1fr 64px;gap:10px;align-items:center;font-size:14px}
+.widget-bars i{display:block;height:12px;border-radius:8px;background:linear-gradient(90deg,var(--primary-2),var(--accent));min-width:2px;transition:width .3s}
+.widget-bars.vertical{grid-template-columns:repeat(auto-fit,minmax(48px,1fr));align-items:end;height:170px}
+.widget-bars.vertical>div{grid-template-columns:1fr;grid-template-rows:1fr auto auto;height:100%;text-align:center}
+.widget-bars.vertical i{width:70%;height:auto;margin:0 auto;align-self:end}
+.widget-table{width:100%;border-collapse:collapse;font-size:14px}
+.widget-table th,.widget-table td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+.widget-table .head,.widget-table th{color:var(--subtle);font-weight:600}
+
+/* ---------- Рейтинг ---------- */
+.ranking-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:18px 0}
+.ranking-controls .p2-period-tabs{margin:0}
+.ranking-self{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:18px}
+.ranking-self>svg{color:var(--primary)}
+.ranking-self>div{flex:1;min-width:200px}
+.ranking-self p{margin:4px 0 0}
+.demo-tag{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:6px;background:var(--surface-3);color:var(--subtle);font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;vertical-align:middle}
+.self-row td{background:var(--primary-soft);font-weight:650}
+.p2-podium-card.self{outline:3px solid var(--primary-line)}
+
+/* ---------- Мой кабинет ---------- */
+.cabinet-tabs{display:flex;gap:6px;overflow-x:auto;padding:4px;margin-bottom:24px;border-radius:14px;background:var(--surface-3);scrollbar-width:thin}
+.cabinet-tabs a{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;padding:10px 14px;min-height:44px;border-radius:10px;color:var(--muted);font-weight:600;font-size:14px;text-decoration:none}
+.cabinet-tabs a:hover{color:var(--ink);background:#ffffffaa}
+.cabinet-tabs a.active{background:var(--surface);color:var(--primary);box-shadow:var(--shadow-sm)}
+.cabinet-overview{display:grid;gap:20px}
+.cabinet-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.cabinet-stat{display:grid;gap:6px;padding:20px}
+.cabinet-stat>span{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:14px}
+.cabinet-stat>span svg{color:var(--primary)}
+.cabinet-stat strong{font-size:28px;letter-spacing:-.5px}
+.cabinet-stat small{color:var(--subtle);font-size:13px}
+.cabinet-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.cabinet-next{display:grid;gap:10px;align-content:start}
+.cabinet-next h2{margin:4px 0 0;font-size:22px}
+.cabinet-next p{margin:0}
+.cabinet-next .button{justify-self:start}
+.cabinet-overview .panel>h2{display:flex;align-items:center;gap:8px;font-size:19px;margin:0 0 12px;letter-spacing:-.2px}
+.cabinet-overview .panel>h2 svg{color:var(--primary)}
+.skill-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.skill-list li{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.danger-zone{margin-top:20px;border-color:#fecaca}
+.danger-zone h2{margin-top:0;color:var(--danger)}
+
+/* ---------- Адаптивность ---------- */
+@media(max-width:1024px){.course-layout,.lesson-layout{grid-template-columns:1fr}.course-side,.lesson-nav{position:static;max-height:none}.lesson-nav{order:2}.cabinet-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:768px){.course-hero{grid-template-columns:1fr;padding:22px}.course-hero h1,.lesson-header h1{font-size:28px}.cabinet-grid{grid-template-columns:1fr}.widget-grid.three{grid-template-columns:1fr 1fr}.lesson-block{padding:18px}}
+@media(max-width:480px){.course-grid{grid-template-columns:1fr}.widget-grid,.widget-grid.three{grid-template-columns:1fr}.cabinet-stats{grid-template-columns:1fr 1fr}.cabinet-stat strong{font-size:22px}.widget-bars>div{grid-template-columns:90px 1fr 54px}.lesson-footer .button{width:100%}.ranking-controls>*{flex:1 1 100%}.course-card{padding:18px}}
+@media(max-width:360px){.cabinet-stats{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.course-card,.course-card:hover,.xp-badge:hover{transform:none;transition:none}.widget-bars i,.progress>span{transition:none}}
+.search-field input,.search-field input:focus{border:0!important;box-shadow:none!important;outline:0;padding:0;min-height:44px;background:transparent}
+
+/* ---------- Главная: честная кликабельность ---------- */
+a.program-row,a.benefit-card{color:inherit;text-decoration:none}
+a.program-row:focus-visible,a.benefit-card:focus-visible{outline:3px solid var(--primary-line);outline-offset:3px}
+:where(a.benefit-card){display:block}
+a.benefit-card{cursor:pointer;transition:transform .2s,box-shadow .2s}
+a.benefit-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.benefit-more{grid-column:1/-1;display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-weight:700;color:var(--primary)}
+.hero-proof .sticker-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--primary-soft);color:var(--primary);flex-shrink:0}
+/* Карточка миссии кликабельна целиком: кнопка растянута на всю карточку. */
+.case-card{position:relative;cursor:pointer}
+.case-card .case-card-bottom .text-button:after{content:'';position:absolute;inset:0;border-radius:inherit}
+.case-card:focus-within{outline:3px solid var(--primary-line);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){a.benefit-card:hover{transform:none}}

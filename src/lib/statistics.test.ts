@@ -1,5 +1,5 @@
 import { describe,it,expect } from 'vitest';
-import { absoluteChange,axisNumber,compareProportions,conversion,niceTicks,percent,points,relativeChange } from './statistics';
+import { absoluteChange,axisNumber,compareProportions,conversion,niceTicks,percent,points,relativeChange,sampleSizePerGroup } from './statistics';
 import { cases } from '../data/cases';
 import { validateTree } from './metrics';
 import { score,emptyAnswers,correctReasons } from './scoring';
@@ -18,3 +18,8 @@ it('деления оси круглые и включают границы',()=
 it('единицы эффекта',()=>{expect(absoluteChange(.05,.055)).toBeCloseTo(.005);expect(points(.005)).toBe('+0,5 п.п.');expect(percent(.05)).toBe('5 %');expect(relativeChange(0,1)).toBeNull();});
 });
 describe('Данные и рубрика',()=>{for(const c of cases){it(`${c.company}: дерево согласовано`,()=>expect(validateTree(c)).toBe(true));it(`${c.company}: верные ответы = 100`,()=>{const a={...emptyAnswers,node:c.diagnosis,hypothesis:1,primary:0,guardrail:0,interpretation:0,decision:c.decision,reasons:correctReasons(c)};expect(score(c,a).reduce((s,r)=>s+r.points,0)).toBe(100);});it(`${c.company}: неверные ответы = 0`,()=>{const a={...emptyAnswers,node:c.metrics[0].id,hypothesis:0,primary:1,guardrail:1,interpretation:1,decision:c.decision===0?1:0};expect(score(c,a).reduce((s,r)=>s+r.points,0)).toBe(0);});}it('частичный диагноз QuickFood',()=>expect(score(cases[2],{...emptyAnswers,node:'margin'})[0].points).toBe(15));it('частичный диагноз: верная ветка на уровень выше',()=>{expect(score(cases[0],{...emptyAnswers,node:'orders'})[0].points).toBe(15);expect(score(cases.find(c=>c.id==='ads')!,{...emptyAnswers,node:'spend'})[0].points).toBe(15);expect(score(cases[0],{...emptyAnswers,node:'revenue'})[0].points).toBe(0);expect(score(cases[0],{...emptyAnswers,node:'visitors'})[0].points).toBe(0);});});
+describe('Размер выборки',()=>{
+ it('классическая формула для двух долей',()=>{const n=sampleSizePerGroup(.05,.005);expect(n).toBeGreaterThan(30000);expect(n).toBeLessThan(32500);const big=sampleSizePerGroup(.05,.01);expect(big).toBeGreaterThan(7800);expect(big).toBeLessThan(8500);});
+ it('больше мощность и строже α — больше выборка',()=>{expect(sampleSizePerGroup(.1,.02,.05,.9)).toBeGreaterThan(sampleSizePerGroup(.1,.02));expect(sampleSizePerGroup(.1,.02,.01)).toBeGreaterThan(sampleSizePerGroup(.1,.02));});
+ it('некорректные входы отклоняются',()=>{expect(()=>sampleSizePerGroup(0,.01)).toThrow();expect(()=>sampleSizePerGroup(.5,0)).toThrow();expect(()=>sampleSizePerGroup(.95,.1)).toThrow();});
+});
