@@ -63,3 +63,7 @@ Post "https://api.github.com/repos/ludwigjenssen33-dev/sitePM/pulls": Forbidden
 [Создать PR из подготовленной ветки](https://github.com/ludwigjenssen33-dev/sitePM/compare/main...feature/product-lab-4?expand=1). [Готовое описание](PR-4.0.md). Можно также выбрать Create PR в интерфейсе Codex/GitHub. PR не объявляется созданным.
 
 Получение статуса деплоя через GitHub API также вернуло Forbidden; URL успешного Preview Deployment не подтверждён. В Vercel → Deployments выбрать ветку feature/product-lab-4. Production не обновлялся. Локальный dev-сервер проверен на порту 5173 (HTTP 200).
+
+## Публикация после подтверждения владельца
+
+После прямого запроса владельца опубликовать всё в main версия 4.0 включена в `main` через fast-forward с сохранением истории Claude. Force push не использовался. Повторно прошли production build и 219 автоматических тестов. Изменение ветки запускает подключённую автоматизацию Vercel; успешность production-деплоя проверяется отдельно. Серверные секреты и PostgreSQL по-прежнему требуют настройки владельцем, локальные приватные файлы в Git не включены.
