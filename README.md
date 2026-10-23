@@ -109,7 +109,7 @@ Vitest обновлён после предыдущего аудита. Теку
 
 ## Проверка и публикация
 
-Разработка — в **`feature/product-lab-2`**. Не сливайте в `main` до проверки. При работающем GitHub-доступе отправьте эту ветку, создайте PR с базой `main` и используйте Vercel Preview. GitHub → Vercel может создать Preview автоматически, но наличие ссылки нужно проверить в Deployment/Checks. Нельзя выводить успешный деплой из успешной локальной сборки.
+Изменения отправлены в **`feature/product-lab-2`**. Не сливайте в `main` до проверки. Создание PR через CLI заблокировано ответом `Post https://api.github.com/graphql: Forbidden`; PR пока не создан. [Откройте его для проверки](https://github.com/ludwigjenssen33-dev/sitePM/pull/new/feature/product-lab-2) с базой `main` и используйте Vercel Preview. GitHub → Vercel может создать Preview автоматически, но наличие ссылки нужно проверить в Deployment/Checks. Нельзя выводить успешный деплой из успешной локальной сборки.
 
 Vercel: пресет Vite, `npm run build`, результат `dist`. Netlify использует `netlify.toml`. Для отдельного ручного тестового деплоя загрузите `dist` в новый Preview/тестовый проект, не заменяя существующий production.
 
