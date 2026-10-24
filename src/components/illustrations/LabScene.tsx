@@ -4,7 +4,7 @@ type Props = {
   variant?: "hero" | "guide" | "celebrate" | "investigate";
   className?: string;
 };
-const ink = "#202027";
+const ink = "var(--figure-ink, #202027)";
 
 /** Original monochrome stick figures: no faces, clothing or individual appearance. */
 export default function LabScene({ variant = "hero", className = "" }: Props) {
@@ -26,13 +26,14 @@ export default function LabScene({ variant = "hero", className = "" }: Props) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <title id={uid}>{title}</title>
+
       {compact ? (
         <Guide />
       ) : (
         <>
           <path
             d="M66 411C-2 305 48 147 174 80c124-67 327-28 385 87 70 139 16 265-110 282C306 468 139 475 66 411Z"
-            fill="#ede9ff"
+            fill="var(--scene-backdrop, #ede9ff)"
           />
           <circle cx="536" cy="88" r="42" fill="#d2f66c" />
           <path
@@ -44,7 +45,7 @@ export default function LabScene({ variant = "hero", className = "" }: Props) {
             strokeLinejoin="round"
           />
           <ChartBoard />
-          <ellipse cx="314" cy="456" rx="239" ry="10" fill="#d8d1f5" />
+          <ellipse cx="314" cy="456" rx="239" ry="10" fill="var(--scene-shadow, #d8d1f5)" />
           <g
             className="scene-person-one"
             fill="none"
@@ -99,7 +100,7 @@ export default function LabScene({ variant = "hero", className = "" }: Props) {
               width="129"
               height="60"
               rx="12"
-              fill="white"
+              fill="var(--scene-paper, white)"
               stroke={ink}
               strokeWidth="2"
             />
@@ -122,6 +123,7 @@ export default function LabScene({ variant = "hero", className = "" }: Props) {
           )}
         </>
       )}
+      <g className="winter-decoration" aria-hidden="true" fill="#b5313e" stroke="var(--scene-paper, white)" strokeWidth="2">{(compact?[[98,36]]:[[135,180],[445,278]]).map(([x,y])=><g key={x}><path d={`M${x-22} ${y}l15-25 23 25Z`}/><rect x={x-25} y={y-1} width="50" height="8" rx="4"/><circle cx={x-7} cy={y-25} r="5" fill="white"/></g>)}</g>
     </svg>
   );
 }
@@ -129,8 +131,8 @@ export default function LabScene({ variant = "hero", className = "" }: Props) {
 function Guide() {
   return (
     <>
-      <circle cx="120" cy="120" r="109" fill="#ede9ff" />
-      <ellipse cx="125" cy="218" rx="84" ry="7" fill="#d8d1f5" />
+      <circle cx="120" cy="120" r="109" fill="var(--scene-backdrop, #ede9ff)" />
+      <ellipse cx="125" cy="218" rx="84" ry="7" fill="var(--scene-shadow, #d8d1f5)" />
       <g
         fill="none"
         stroke={ink}
@@ -153,7 +155,7 @@ function Laptop({ x, y }: { x: number; y: number }) {
       stroke={ink}
       strokeWidth="3.5"
       strokeLinejoin="round"
-      fill="white"
+      fill="var(--scene-paper, white)"
     >
       <path d="M0 0h80L69 42H-11Z" />
       <path d="M-13 46h88" strokeWidth="5" strokeLinecap="round" />
@@ -171,7 +173,7 @@ function ChartBoard() {
         width="336"
         height="245"
         rx="20"
-        fill="white"
+        fill="var(--scene-paper, white)"
         stroke={ink}
         strokeWidth="3"
       />
@@ -179,8 +181,8 @@ function ChartBoard() {
       <circle cx="239" cy="101" r="5" fill="#fb7156" />
       <circle cx="257" cy="101" r="5" fill="#d2f66c" />
       <circle cx="275" cy="101" r="5" fill="#8a73f5" />
-      <rect x="245" y="144" width="122" height="58" rx="10" fill="#e0dbff" />
-      <text x="259" y="163" fontSize="11" fill="#443788" fontFamily="inherit">
+      <rect x="245" y="144" width="122" height="58" rx="10" fill="var(--scene-panel-a, #e0dbff)" />
+      <text x="259" y="163" fontSize="11" fill="var(--scene-label, #443788)" fontFamily="inherit">
         КОНВЕРСИЯ
       </text>
       <text
@@ -199,8 +201,8 @@ function ChartBoard() {
         strokeWidth="3"
         fill="none"
       />
-      <rect x="382" y="144" width="146" height="58" rx="10" fill="#f0f9da" />
-      <text x="396" y="163" fontSize="11" fill="#426020" fontFamily="inherit">
+      <rect x="382" y="144" width="146" height="58" rx="10" fill="var(--scene-panel-b, #f0f9da)" />
+      <text x="396" y="163" fontSize="11" fill="var(--scene-label, #426020)" fontFamily="inherit">
         НЕ СПЕШИ С ВЫВОДОМ
       </text>
       <text

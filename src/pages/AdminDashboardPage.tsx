@@ -180,7 +180,7 @@ export default function AdminDashboardPage() {
           </p>
         </div>
       </div>
-      <div className="admin-toolbar">
+      <div className="button-row"><Link className="button secondary compact" to="/settings-lab">Локальные настройки</Link><Link className="button secondary compact" to="/my-analytics">Моя аналитика без сервера</Link></div><div className="admin-toolbar">
         <div className="tabs">
           {[
             ["overview", "Обзор"],
@@ -279,20 +279,20 @@ export default function AdminDashboardPage() {
                           <Area
                             dataKey="visitors"
                             name="Посетители"
-                            stroke="#4736ed"
-                            fill="#e1ddff"
+                            stroke="var(--chart-1, #4736ed)"
+                            fill="var(--chart-muted, #e1ddff)"
                           />
                           <Area
                             dataKey="lessons"
                             name="Уроки завершены"
-                            stroke="#187a41"
-                            fill="#d5f5ab"
+                            stroke="var(--chart-2, #187a41)"
+                            fill="var(--chart-1, #d5f5ab)"
                           />
                           <Area
                             dataKey="cases"
                             name="Миссии завершены"
-                            stroke="#d64c30"
-                            fill="#ffe0d7"
+                            stroke="var(--chart-3, #d64c30)"
+                            fill="var(--chart-1, #ffe0d7)"
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -313,7 +313,7 @@ export default function AdminDashboardPage() {
                           <Bar
                             dataKey="count"
                             name="Попытки"
-                            fill="#7561f4"
+                            fill="var(--chart-1, #7561f4)"
                             radius={[8, 8, 0, 0]}
                           />
                         </BarChart>

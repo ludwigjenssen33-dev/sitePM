@@ -34,11 +34,11 @@
   --shadow-lg: 0 22px 60px -26px #4933ed55;
   font-family: "Golos Text Variable", "Golos Text", sans-serif;
   color: var(--ink);
-  background: #fff;
+  background: var(--pl-bg-ffffff, #fff);
 }
 body {
   font-family: inherit;
-  background: #fff;
+  background: var(--pl-bg-ffffff, #fff);
   color: var(--ink);
 }
 button,
@@ -103,12 +103,12 @@ textarea {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--pl-bg-ffffff, #fff);
   border: 1.5px solid var(--primary-line);
   color: var(--primary);
   font-size: 19px;
   font-weight: 700;
-  box-shadow: 0 4px 10px -6px #376cde55;
+  box-shadow: 0 4px 10px -6px var(--pl-line-376cde55, #376cde55);
 }
 .tree-sub {
   display: grid;
@@ -116,7 +116,7 @@ textarea {
   padding: 10px;
   border: 1px dashed var(--primary-line);
   border-radius: 14px;
-  background: #f8faff;
+  background: var(--pl-bg-f8faff, #f8faff);
 }
 .tree-sub .tree-row {
   gap: 6px;
@@ -151,10 +151,10 @@ textarea {
 }
 .metric-node.chosen {
   border-color: var(--primary-2);
-  box-shadow: 0 0 0 3px #5c90ff2e;
+  box-shadow: 0 0 0 3px var(--pl-line-5c90ff2e, #5c90ff2e);
 }
 .metric-node > strong {
-  color: #1a449f;
+  color: var(--pl-text-1a449f, #1a449f);
 }
 @media (max-width: 700px) {
   .tree-row {

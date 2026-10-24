@@ -1,7 +1,54 @@
-import {flushSync} from 'react-dom';
-const aliases:Record<string,string>={home:'/',cases:'/cases',theory:'/courses',progress:'/cabinet/skills',methodology:'/methodology',account:'/cabinet/profile'};
+import { getSettings } from "../config/store";
+import { flushSync } from "react-dom";
+const aliases: Record<string, string> = {
+  home: "/",
+  cases: "/cases",
+  theory: "/courses",
+  progress: "/cabinet/skills",
+  methodology: "/methodology",
+  account: "/cabinet/profile",
+};
 /** Старые адреса версии 1.x продолжают работать и ведут в новые разделы. */
-const legacy:Record<string,string>={'/learn':'/courses','/skills':'/cabinet/skills','/certificate':'/cabinet/certificate','/account':'/cabinet/profile','/cabinet/overview':'/cabinet'};
-export function resolveRoute(path:string,hash=''){if(hash.startsWith('#access_token=')||hash.includes('type=recovery'))return '/cabinet/profile';const raw=hash.replace(/^#/,'');if(raw.startsWith('case/'))return '/mission/'+raw.slice(5);const route=raw?aliases[raw]||'/'+raw.replace(/^\//,''):path.replace(/\/$/,'')||'/';return legacy[route]||route;}
-let transition:{skipTransition:()=>void}|undefined;
-export function navigate(path:string){const target=aliases[path]||(path.startsWith('/')?path:'/'+path);const update=()=>{flushSync(()=>{history.pushState({},'',target);window.dispatchEvent(new PopStateEvent('popstate'));});window.scrollTo({top:0,behavior:'instant'});};const reduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;const doc=document as Document&{startViewTransition?:(callback:()=>void)=>{skipTransition:()=>void;finished:Promise<void>}};if(doc.startViewTransition&&!reduced){transition?.skipTransition();transition=doc.startViewTransition(update);void (transition as {finished?:Promise<void>}).finished?.catch(()=>{});}else update();}
+const legacy: Record<string, string> = {
+  "/learn": "/courses",
+  "/skills": "/cabinet/skills",
+  "/certificate": "/cabinet/certificate",
+  "/account": "/cabinet/profile",
+  "/cabinet/overview": "/cabinet",
+};
+export function resolveRoute(path: string, hash = "") {
+  if (hash.startsWith("#access_token=") || hash.includes("type=recovery"))
+    return "/cabinet/profile";
+  const raw = hash.replace(/^#/, "");
+  if (raw.startsWith("case/")) return "/mission/" + raw.slice(5);
+  const route = raw
+    ? aliases[raw] || "/" + raw.replace(/^\//, "")
+    : path.replace(/\/$/, "") || "/";
+  return legacy[route] || route;
+}
+let transition: { skipTransition: () => void } | undefined;
+export function navigate(path: string) {
+  const target = aliases[path] || (path.startsWith("/") ? path : "/" + path);
+  const update = () => {
+    flushSync(() => {
+      history.pushState({}, "", target);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
+  const reduced =
+    !getSettings().interface.animations ||
+    (typeof matchMedia === "function" &&
+      matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const doc = document as Document & {
+    startViewTransition?: (callback: () => void) => {
+      skipTransition: () => void;
+      finished: Promise<void>;
+    };
+  };
+  if (doc.startViewTransition && !reduced) {
+    transition?.skipTransition();
+    transition = doc.startViewTransition(update);
+    void (transition as { finished?: Promise<void> }).finished?.catch(() => {});
+  } else update();
+}

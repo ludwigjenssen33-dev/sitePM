@@ -117,7 +117,7 @@ export default function AdminLoginPage() {
         <Link to="/courses" className="text-button">
           Я здесь учиться →
         </Link>
-      </section>
+      <Link to="/settings-lab" className="text-button">Открыть локальный Control Center →</Link></section>
     </div>
   );
 }

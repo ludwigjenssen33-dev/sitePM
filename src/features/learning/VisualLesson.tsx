@@ -366,7 +366,7 @@ function Interval({ n }: { n: number }) {
           x2="460"
           y1="50"
           y2="50"
-          stroke="#d8d1f5"
+          stroke="var(--chart-grid, #d8d1f5)"
           strokeWidth="2"
         />
         <line
@@ -374,7 +374,7 @@ function Interval({ n }: { n: number }) {
           x2={x(0)}
           y1="15"
           y2="75"
-          stroke="#8a829e"
+          stroke="var(--muted, #8a829e)"
           strokeDasharray="4 4"
         />
         <line
@@ -382,7 +382,7 @@ function Interval({ n }: { n: number }) {
           x2={x(s.ci[1])}
           y1="50"
           y2="50"
-          stroke="#6044ef"
+          stroke="var(--chart-1, #6044ef)"
           strokeWidth="9"
           strokeLinecap="round"
         />

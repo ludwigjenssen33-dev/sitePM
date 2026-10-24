@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "access": {
+    "mode": "free",
+    "minCompletion": 100,
+    "minScore": 70,
+    "courseRules": {},
+    "order": []
+  },
+  "lessons": {
+    "sequential": false,
+    "allowSkipTheory": true,
+    "maxAttempts": 0,
+    "allowRepeat": true,
+    "showAnswers": true,
+    "explanations": true,
+    "showProgress": true,
+    "disabledExercises": []
+  },
+  "scoring": {
+    "enabled": true,
+    "hintCost": 2,
+    "maxHints": 4,
+    "passScore": 70,
+    "lessonXP": 25,
+    "perfectBonus": 0,
+    "improvementBonus": 0
+  },
+  "game": {
+    "achievements": true,
+    "certificates": true,
+    "levels": true,
+    "streaks": true,
+    "successThreshold": 70,
+    "streakTarget": 3,
+    "masterThreshold": 100,
+    "courseCelebration": true,
+    "rewardAnimations": true,
+    "ranking": true
+  },
+  "interface": {
+    "theme": "light",
+    "animations": true,
+    "density": "standard",
+    "characters": true,
+    "decorations": true,
+    "accent": "default"
+  },
+  "content": {
+    "sections": {
+      "courses": true,
+      "cases": true,
+      "cabinet": true,
+      "lab": true,
+      "achievements": true,
+      "ranking": true,
+      "methodology": true
+    },
+    "showWelcome": true,
+    "recommendations": true,
+    "banners": true,
+    "showDemos": true
+  }
+}

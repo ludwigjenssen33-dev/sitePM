@@ -1,13 +1,401 @@
-import {useState} from 'react';
-import {ArrowRight,ArrowUpRight,Award,BookOpen,CheckCircle2,Lightbulb,RotateCcw,Sparkles} from 'lucide-react';
-import {Bar,BarChart,CartesianGrid,Legend,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
-import {caseVariants,type Case} from '../data/cases';
-import {lessons} from '../data/lessons';
-import {score,hintPenalty,criterionStage} from '../lib/scoring';
-import type {Attempt,ProgressState} from '../domain/progress';
-import {navigate} from '../domain/router';
-import Modal from '../components/Modal';
-import ShareResult from '../features/sharing/ShareResult';
-import {nextMission} from '../domain/learningPath';
-import {chartTooltip} from '../features/mission/ExperimentPanel';
-export default function ResultsPage({c,attempt,state,onRepeat,openLesson}:{c:Case;attempt:Attempt;state:ProgressState;onRepeat:(v:number)=>void;openLesson:(id:string)=>void}){const rows=score(c,attempt.answers);const previous=state.attempts.filter(a=>a.caseId===c.id&&a.id!==attempt.id&&a.finished&&!a.summaryOnly&&a.updated<=attempt.updated).sort((a,b)=>b.updated.localeCompare(a.updated))[0];const [repeat,setRepeat]=useState<number|null>(null);const scoreRows=attempt.migrated&&attempt.criteria?attempt.criteria:rows;return <><section className="result-hero panel"><div className="score-circle"><strong>{attempt.score}</strong><span>из 100 баллов</span></div><div><span className="eyebrow">МИССИЯ ЗАВЕРШЕНА</span><h2>{attempt.score>=85?'Вот это продуктовое мышление!':attempt.score>=60?'Есть основа. Давай усилим решение.':'Ошибаться здесь — часть обучения.'}</h2><p>Пять критериев, прозрачная рубрика и следующий шаг для роста.</p>{attempt.migrated?<p className="tiny muted">Исторический результат версии 1 сохранён без пересчёта по новой рубрике.</p>:<p className="tiny muted">{hintPenalty(attempt.answers)?`Подсказки: ${[...new Set(attempt.answers.hints||[])].sort().map(i=>['диагностика','гипотеза','A/B-тест','решение'][i]).join(', ')} (−${hintPenalty(attempt.answers)} балла).`:'Пройдено без подсказок.'} XP растёт только при улучшении лучшего результата уникальной миссии.</p>}<div className="button-row"><ShareResult caseId={c.id} score={attempt.score}/>{caseVariants(c.id).length>1?<button className="button primary" onClick={()=>setRepeat((attempt.variant+1)%caseVariants(c.id).length)}>Попробовать с другими данными<RotateCcw size={17}/></button>:<button className="button primary" onClick={()=>navigate(nextMission(state)?'/mission/'+nextMission(state)!.id:'/map')}>Перейти к следующей миссии<ArrowRight size={17}/></button>}<button className="button secondary" onClick={()=>navigate('/skills')}>Мои навыки<ArrowUpRight size={17}/></button></div></div></section><section className={`consequence-card ${attempt.answers.decision===c.decision?'good':'careful'}`}><span className="consequence-icon">{attempt.answers.decision===c.decision?<Sparkles size={28}/>:<Lightbulb size={28}/>}</span><div><span className="eyebrow">ПОСЛЕДСТВИЯ · УЧЕБНАЯ МОДЕЛЬ</span><h3>{attempt.answers.decision===c.decision?'Команда получила обоснованный следующий шаг':'Решение создаёт дополнительные риски'}</h3><p>{c.consequences?.[attempt.answers.decision]||c.explanation}</p><small>Это детерминированный сюжетный исход, а не реальное наблюдение и не прогноз коммерческого результата.</small></div></section><section className="panel"><h2>Что говорят данные — и где их границы</h2><div className="table-scroll"><table><thead><tr><th>Что наблюдали</th><th>Что можем утверждать</th><th>Чего это не доказывает</th></tr></thead><tbody>{(c.takeaways||[{observed:c.diagnosticExplanation,claim:c.interpretations[c.correctInterpretation],limit:'Причинный вывод ограничен дизайном эксперимента и исследованной аудиторией.'}]).map((r,i)=><tr key={i}><td>{r.observed}</td><td>{r.claim}</td><td>{r.limit}</td></tr>)}</tbody></table></div></section><section className="panel chart-panel result-chart"><h3>Результат по пяти критериям</h3><p className="muted tiny">Полученные баллы и максимум; штраф за подсказки применяется к общему итогу.</p><ResponsiveContainer width="100%" height={270}><BarChart data={scoreRows} margin={{left:-25}}><CartesianGrid stroke="#e4e6e9" vertical={false}/><XAxis dataKey="name" tick={{fill:'#4c525a',fontSize:12}} interval={0} height={55}/><YAxis domain={[0,25]} ticks={[0,5,10,15,20,25]} tick={{fill:'#4c525a',fontSize:12}}/><Tooltip {...chartTooltip}/><Legend/><Bar dataKey="max" name="Максимум" fill="#dce7ff" radius={[4,4,0,0]}/><Bar dataKey="points" name="Получено" fill="#376cde" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></section>{previous&&<section className="panel"><h3>Твой прогресс между попытками</h3><p className="muted">Ранее: {previous.score}/100. Сейчас: {attempt.score}/100. Изменение: {attempt.score-previous.score>0?'+':''}{attempt.score-previous.score} баллов.</p><div className="table-scroll"><table><thead><tr><th>Критерий</th><th>Прошлая попытка</th><th>Сейчас</th><th>Разница</th></tr></thead><tbody>{scoreRows.map((r,i)=><tr key={r.name}><td>{r.name}</td><td>{previous.criteria?.[i]?.points??'Нет детализации'}</td><td>{r.points}</td><td>{previous.criteria?.[i]?r.points-previous.criteria[i].points:'—'}</td></tr>)}</tbody></table></div></section>}<div className="review-list">{rows.map((r,i)=><section className="panel review" key={r.name}><div className="review-heading"><h3>{r.points===r.max?<CheckCircle2 size={21} className="success"/>:<Lightbulb size={21} className="warning-text"/>}{r.name}</h3><span className="review-badges">{(attempt.answers.hints||[]).includes(criterionStage[i])&&(i!==2)&&<span className="badge hint-badge"><Lightbulb size={13}/>Подсказка · −2</span>}<span className="badge">{attempt.migrated?scoreRows[i].points:r.points} / {r.max}</span></span></div><p><span className="muted">Твой ответ: </span>{r.selected}</p><p><strong>Обоснованный ответ: </strong>{r.correct}</p><p className="muted">{r.explanation}</p><div className="button-row">{r.slides.map(id=><button className="theory-link" key={id} onClick={()=>openLesson(id)}><BookOpen size={14}/>{id} · {lessons.find(s=>s.id===id)?.title||'Открыть урок'}</button>)}</div></section>)}</div>{attempt.answers.note&&<section className="panel"><h3>Твоя заметка</h3><p className="user-note">{attempt.answers.note}</p><small className="muted">Локальная запись для рефлексии, не влияет на оценку.</small></section>}<div className="mission-end-banner"><Award size={36}/><div><h3>Ещё один шаг к уверенным решениям</h3><p>Сравни навыки или открой новую историю.</p></div><button className="button primary" onClick={()=>navigate(nextMission(state)?'/mission/'+nextMission(state)!.id:'/skills')}>{nextMission(state)?'Следующая миссия ждёт':'Мои новые навыки'}<ArrowRight size={18}/></button></div>{repeat!==null&&<Modal title="Новая история с новыми данными" onClose={()=>setRepeat(null)}><p>{caseVariants(c.id).length>1?'Контекст сохранится, но результаты эксперимента изменятся. Прежняя попытка останется в истории, а профиль навыков учтёт лучший результат.':'У этой миссии пока один проверенный набор данных. Можно повторить его; предыдущий результат сохранится.'}</p><div className="button-row"><button className="button secondary" onClick={()=>setRepeat(null)}>Отмена</button><button className="button primary" onClick={()=>{onRepeat(repeat);setRepeat(null);}}>Начать новую попытку<ArrowRight size={17}/></button></div></Modal>}</>;}
+import { useSettings } from "../config/store";
+import { legacyScoringRules } from "../config/schema";
+import { useState } from "react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Award,
+  BookOpen,
+  CheckCircle2,
+  Lightbulb,
+  RotateCcw,
+  Sparkles,
+} from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { caseVariants, type Case } from "../data/cases";
+import { lessons } from "../data/lessons";
+import { score, hintPenalty, criterionStage } from "../lib/scoring";
+import type { Attempt, ProgressState } from "../domain/progress";
+import { navigate } from "../domain/router";
+import Modal from "../components/Modal";
+import ShareResult from "../features/sharing/ShareResult";
+import { nextMission } from "../domain/learningPath";
+import { chartTooltip } from "../features/mission/ExperimentPanel";
+export default function ResultsPage({
+  c,
+  attempt,
+  state,
+  onRepeat,
+  openLesson,
+}: {
+  c: Case;
+  attempt: Attempt;
+  state: ProgressState;
+  onRepeat: (v: number) => void;
+  openLesson: (id: string) => void;
+}) {
+  const config = useSettings();
+  const rules = attempt.rules || legacyScoringRules;
+  const rows = score(c, attempt.answers);
+  const previous = state.attempts
+    .filter(
+      (a) =>
+        a.caseId === c.id &&
+        a.id !== attempt.id &&
+        a.finished &&
+        !a.summaryOnly &&
+        a.updated <= attempt.updated,
+    )
+    .sort((a, b) => b.updated.localeCompare(a.updated))[0];
+  const [repeat, setRepeat] = useState<number | null>(null);
+  const scoreRows =
+    attempt.migrated && attempt.criteria ? attempt.criteria : rows;
+  return (
+    <>
+      <section className="result-hero panel">
+        <div className="score-circle">
+          <strong>{attempt.score}</strong>
+          <span>из 100 баллов</span>
+        </div>
+        <div>
+          <span className="eyebrow">МИССИЯ ЗАВЕРШЕНА</span>
+          <h2>
+            {!rules.enabled
+              ? "Миссия завершена без начисления баллов"
+              : attempt.score >= 85
+                ? "Вот это продуктовое мышление!"
+                : attempt.score >= 60
+                  ? "Есть основа. Давай усилим решение."
+                  : "Ошибаться здесь — часть обучения."}
+          </h2>
+          <p>Пять критериев, прозрачная рубрика и следующий шаг для роста.</p>
+          {rules.enabled && (
+            <p className="tiny muted">
+              Проходной порог этой попытки: {rules.passScore}/100.{" "}
+              {attempt.score >= rules.passScore
+                ? "Порог достигнут."
+                : "Порог пока не достигнут."}
+            </p>
+          )}
+          {attempt.migrated ? (
+            <p className="tiny muted">
+              Исторический результат версии 1 сохранён без пересчёта по новой
+              рубрике.
+            </p>
+          ) : (
+            <p className="tiny muted">
+              {hintPenalty(attempt.answers, rules.hintCost, rules.maxHints)
+                ? `Подсказки: ${[...new Set(attempt.answers.hints || [])]
+                    .sort()
+                    .map(
+                      (i) =>
+                        ["диагностика", "гипотеза", "A/B-тест", "решение"][i],
+                    )
+                    .join(
+                      ", ",
+                    )} (−${hintPenalty(attempt.answers, rules.hintCost, rules.maxHints)} балла).`
+                : "Пройдено без подсказок."}{" "}
+              XP растёт только при улучшении лучшего результата уникальной
+              миссии.
+            </p>
+          )}
+          <div className="button-row">
+            {rules.enabled && (
+              <ShareResult caseId={c.id} score={attempt.score} />
+            )}
+            {config.lessons.allowRepeat && caseVariants(c.id).length > 1 ? (
+              <button
+                className="button primary"
+                onClick={() =>
+                  setRepeat((attempt.variant + 1) % caseVariants(c.id).length)
+                }
+              >
+                Попробовать с другими данными
+                <RotateCcw size={17} />
+              </button>
+            ) : (
+              <button
+                className="button primary"
+                onClick={() =>
+                  navigate(
+                    nextMission(state)
+                      ? "/mission/" + nextMission(state)!.id
+                      : "/map",
+                  )
+                }
+              >
+                Перейти к следующей миссии
+                <ArrowRight size={17} />
+              </button>
+            )}
+            <button
+              className="button secondary"
+              onClick={() => navigate("/skills")}
+            >
+              Мои навыки
+              <ArrowUpRight size={17} />
+            </button>
+          </div>
+        </div>
+      </section>
+      {config.lessons.explanations && config.lessons.showAnswers && (
+        <section
+          className={`consequence-card ${attempt.answers.decision === c.decision ? "good" : "careful"}`}
+        >
+          <span className="consequence-icon">
+            {attempt.answers.decision === c.decision ? (
+              <Sparkles size={28} />
+            ) : (
+              <Lightbulb size={28} />
+            )}
+          </span>
+          <div>
+            <span className="eyebrow">ПОСЛЕДСТВИЯ · УЧЕБНАЯ МОДЕЛЬ</span>
+            <h3>
+              {attempt.answers.decision === c.decision
+                ? "Команда получила обоснованный следующий шаг"
+                : "Решение создаёт дополнительные риски"}
+            </h3>
+            <p>{c.consequences?.[attempt.answers.decision] || c.explanation}</p>
+            <small>
+              Это детерминированный сюжетный исход, а не реальное наблюдение и
+              не прогноз коммерческого результата.
+            </small>
+          </div>
+        </section>
+      )}
+      <section className="panel">
+        <h2>Что говорят данные — и где их границы</h2>
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Что наблюдали</th>
+                <th>Что можем утверждать</th>
+                <th>Чего это не доказывает</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(
+                c.takeaways || [
+                  {
+                    observed: c.diagnosticExplanation,
+                    claim: c.interpretations[c.correctInterpretation],
+                    limit:
+                      "Причинный вывод ограничен дизайном эксперимента и исследованной аудиторией.",
+                  },
+                ]
+              ).map((r, i) => (
+                <tr key={i}>
+                  <td>{r.observed}</td>
+                  <td>{r.claim}</td>
+                  <td>{r.limit}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section className="panel chart-panel result-chart">
+        <h3>Результат по пяти критериям</h3>
+        <p className="muted tiny">
+          Полученные баллы и максимум; штраф за подсказки применяется к общему
+          итогу.
+        </p>
+        <ResponsiveContainer width="100%" height={270}>
+          <BarChart data={scoreRows} margin={{ left: -25 }}>
+            <CartesianGrid
+              stroke="var(--chart-grid, #e4e6e9)"
+              vertical={false}
+            />
+            <XAxis
+              dataKey="name"
+              tick={{ fill: "var(--muted, #4c525a)", fontSize: 12 }}
+              interval={0}
+              height={55}
+            />
+            <YAxis
+              domain={[0, 25]}
+              ticks={[0, 5, 10, 15, 20, 25]}
+              tick={{ fill: "var(--muted, #4c525a)", fontSize: 12 }}
+            />
+            <Tooltip {...chartTooltip} />
+            <Legend />
+            <Bar
+              dataKey="max"
+              name="Максимум"
+              fill="var(--chart-muted, #dce7ff)"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="points"
+              name="Получено"
+              fill="var(--chart-1, #376cde)"
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </section>
+      {previous && (
+        <section className="panel">
+          <h3>Твой прогресс между попытками</h3>
+          <p className="muted">
+            Ранее: {previous.score}/100. Сейчас: {attempt.score}/100. Изменение:{" "}
+            {attempt.score - previous.score > 0 ? "+" : ""}
+            {attempt.score - previous.score} баллов.
+          </p>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Критерий</th>
+                  <th>Прошлая попытка</th>
+                  <th>Сейчас</th>
+                  <th>Разница</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scoreRows.map((r, i) => (
+                  <tr key={r.name}>
+                    <td>{r.name}</td>
+                    <td>
+                      {previous.criteria?.[i]?.points ?? "Нет детализации"}
+                    </td>
+                    <td>{r.points}</td>
+                    <td>
+                      {previous.criteria?.[i]
+                        ? r.points - previous.criteria[i].points
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+      <div className="review-list">
+        {rows.map((r, i) => (
+          <section className="panel review" key={r.name}>
+            <div className="review-heading">
+              <h3>
+                {r.points === r.max ? (
+                  <CheckCircle2 size={21} className="success" />
+                ) : (
+                  <Lightbulb size={21} className="warning-text" />
+                )}
+                {r.name}
+              </h3>
+              <span className="review-badges">
+                {(attempt.answers.hints || []).includes(criterionStage[i]) &&
+                  i !== 2 && (
+                    <span className="badge hint-badge">
+                      <Lightbulb size={13} />
+                      Подсказка · −{rules.hintCost}
+                    </span>
+                  )}
+                <span className="badge">
+                  {attempt.migrated ? scoreRows[i].points : r.points} / {r.max}
+                </span>
+              </span>
+            </div>
+            <p>
+              <span className="muted">Твой ответ: </span>
+              {r.selected}
+            </p>
+            {config.lessons.showAnswers && (
+              <p>
+                <strong>Обоснованный ответ: </strong>
+                {r.correct}
+              </p>
+            )}
+            {config.lessons.showAnswers && config.lessons.explanations && (
+              <p className="muted">{r.explanation}</p>
+            )}
+            <div className="button-row">
+              {r.slides.map((id) => (
+                <button
+                  className="theory-link"
+                  key={id}
+                  onClick={() => openLesson(id)}
+                >
+                  <BookOpen size={14} />
+                  {id} ·{" "}
+                  {lessons.find((s) => s.id === id)?.title || "Открыть урок"}
+                </button>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+      {attempt.answers.note && (
+        <section className="panel">
+          <h3>Твоя заметка</h3>
+          <p className="user-note">{attempt.answers.note}</p>
+          <small className="muted">
+            Локальная запись для рефлексии, не влияет на оценку.
+          </small>
+        </section>
+      )}
+      <div className="mission-end-banner">
+        <Award size={36} />
+        <div>
+          <h3>Ещё один шаг к уверенным решениям</h3>
+          <p>Сравни навыки или открой новую историю.</p>
+        </div>
+        <button
+          className="button primary"
+          onClick={() =>
+            navigate(
+              nextMission(state)
+                ? "/mission/" + nextMission(state)!.id
+                : "/skills",
+            )
+          }
+        >
+          {nextMission(state) ? "Следующая миссия ждёт" : "Мои новые навыки"}
+          <ArrowRight size={18} />
+        </button>
+      </div>
+      {repeat !== null && (
+        <Modal
+          title="Новая история с новыми данными"
+          onClose={() => setRepeat(null)}
+        >
+          <p>
+            {config.lessons.allowRepeat && caseVariants(c.id).length > 1
+              ? "Контекст сохранится, но результаты эксперимента изменятся. Прежняя попытка останется в истории, а профиль навыков учтёт лучший результат."
+              : "У этой миссии пока один проверенный набор данных. Можно повторить его; предыдущий результат сохранится."}
+          </p>
+          <div className="button-row">
+            <button
+              className="button secondary"
+              onClick={() => setRepeat(null)}
+            >
+              Отмена
+            </button>
+            <button
+              className="button primary"
+              onClick={() => {
+                onRepeat(repeat);
+                setRepeat(null);
+              }}
+            >
+              Начать новую попытку
+              <ArrowRight size={17} />
+            </button>
+          </div>
+        </Modal>
+      )}
+    </>
+  );
+}
